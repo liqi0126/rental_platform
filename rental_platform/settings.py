@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'application.rent_application',
     'application.renter_application',
     'application.release_application',
+    'phone_field',
 ]
 
 MIDDLEWARE = [
