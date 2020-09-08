@@ -7,7 +7,9 @@ from rest_framework import serializers
 
 
 class RenterApplication(Application):
+
     applicant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='renter_applications')
+
 
 
 class RenterApplicationSerializer(serializers.ModelSerializer):
