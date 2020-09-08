@@ -27,10 +27,10 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     # user related
     path('api/v1/login', user_views.login),
-    path('api/v1/equipment', equipment_views.create_new_equipment)
 
 
     # equipments relate
+    path('api/v1/equipment', equipment_views.create_new_equipment)
 
 
     #
