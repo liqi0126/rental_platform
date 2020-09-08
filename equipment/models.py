@@ -42,5 +42,6 @@ class Equipment(models.Model):
 
     class Meta:
         ordering = ['created_at']
+        app_label = 'equipment'
 
 
