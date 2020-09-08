@@ -40,11 +40,6 @@ class UsersList(generics.ListCreateAPIView):
     serializer_class = UserSerializer
 
 
-class UserCreate(generics.CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-
-
 class UserDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
