@@ -28,3 +28,23 @@ def create_renter_application(request):
     new_renter_application.save()
 
     return JsonResponse({'applicant': user_id})
+
+
+def get_renter_application(request):
+    if request.method != 'GET':
+        return JsonResponse({'error': 'require GET'})
+
+    page = request.GET.get('page', '')
+
+    renter_application_list = RenterApplication.all()
+    renter_application_list_json = []
+    for item in renter_application_list:
+        renter_application_list_json.append({
+            "id": item.id,
+            "applicant_name": item.User.username,
+            "status": item.status,
+            "description": item.description
+        })
+
+    return JsonResponse(renter_application_list_json, safe=False)
+

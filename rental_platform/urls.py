@@ -38,6 +38,6 @@ urlpatterns = [
 
 
     # application related
-    path('api/v1/renter-application', renter_application_views.create_renter_application)
-
+    path('api/v1/renter-application', renter_application_views.create_renter_application),
+    path('api/v1/renter-application?page=:page', renter_application_views.get_renter_application)
 ]
