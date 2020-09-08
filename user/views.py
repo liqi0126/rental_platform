@@ -1,5 +1,4 @@
 from django.http import JsonResponse
-
 from django.contrib.auth.hashers import make_password, check_password
 from user.models import User, UserSerializer
 
@@ -38,7 +37,20 @@ def login(request):
 
 class UsersList(APIView):
     def get(self, request, format=None):
-        users = User.objects.all()
+
+        size = request.query_params.get('size', '10')
+        try:
+            size = int(size)
+        except ValueError:
+            return Response(f'invalid parameter size: {size}', status=400)
+
+        page = request.query_params.get('page', '1')
+        try:
+            page = int(page)
+        except ValueError:
+            return Response(f'invalid parameter page: {page}', status=400)
+
+        users = User.objects.all()[(page-1)*size:page*size]
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
 
