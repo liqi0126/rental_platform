@@ -31,10 +31,8 @@ urlpatterns = [
     # path('api/v1/users/<int:userId>', user_views.get_user_by_id),
 
     # equipments related
-    path('api/v1/equipment/', equipment_views.create_new_equipment),
-
-    # equipments relate
-    path('api/v1/equipment', equipment_views.create_new_equipment)
+    path('api/v1/equipment', equipment_views.create_new_equipment),
+    path('api/v1/equipment/<int:equipment_id>', equipment_views.get_single_equipment)
 
 
     #
