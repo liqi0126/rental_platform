@@ -1,6 +1,7 @@
 from django.http import JsonResponse
 from django.contrib.auth.hashers import make_password, check_password
-from user.models import User, UserSerializer
+from user.models import User
+from user.serializers import UserSerializer
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
