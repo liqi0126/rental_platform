@@ -31,9 +31,11 @@ urlpatterns = [
     path('api/v1/users/<int:pk>', user_views.UserDetail.as_view()),
 
     # equipments related
-    path('api/v1/equipment', equipment_views.create_new_equipment),
-    path('api/v1/equipment/<int:equipment_id>', equipment_views.get_single_equipment)
+    path('api/v1/equipment', equipment_views.EquipmentsBatch.as_view()),
+    path('api/v1/equipment/<int:equipment_id>', equipment_views.EquipmentSingle.as_view()),
 
 
-    #
+    # application related
+    path('api/v1/renter-application', renter_application_views.create_renter_application)
+
 ]
