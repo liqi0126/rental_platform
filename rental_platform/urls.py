@@ -21,7 +21,7 @@ import equipment.views as equipment_views
 import application.rent_application.views as rent_application_views
 import application.renter_application.views as renter_application_views
 import application.release_application.views as release_application_views
-
+from rest_framework.authtoken import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),

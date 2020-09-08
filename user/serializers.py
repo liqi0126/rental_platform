@@ -1,12 +1,6 @@
 from rest_framework import serializers
 from equipment.serializers import EquipmentSerializer
-from .models import Administrator, User
-
-
-class AdministratorSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Administrator
-        fields = '__all__'
+from .models import User
 
 
 class UserSerializer(serializers.ModelSerializer):

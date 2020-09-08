@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 from user.models import User
 from application.models import Application
@@ -6,4 +7,4 @@ from application.models import Application
 
 
 class RenterApplication(Application):
-    applicant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='renter_applications')
+    applicant = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='renter_applications')
