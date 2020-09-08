@@ -7,4 +7,5 @@ from application.models import Application
 
 
 class RenterApplication(Application):
-    applicant = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='renter_applications', blank=True, null=True)
+    applicant = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='renter_applications')
+
