@@ -2,12 +2,17 @@ from django.http import JsonResponse
 from user.models import User
 from user.serializers import UserSerializer
 
+from rest_framework.views import APIView
+
+
+from django.http import QueryDict, HttpResponse
+
+
 from rest_framework import generics
 # Create your views here.
 
 
 def login(request):
-
     if request.method != 'POST':
         return JsonResponse({'error': 'require POST'})
 
@@ -34,6 +39,27 @@ def login(request):
     return JsonResponse({'user': username})
 
 
+class register(APIView):
+    def patch(self, request, format=None):
+
+        dict = QueryDict(request.body)
+        username = dict.get('username', '')
+        password = dict.get('password', '')
+        address = dict.get('address', '')
+        email = dict.get('email', '')
+        phone = dict.get('phone', '')
+        is_renter = dict.get('is_renter', False)
+
+        if username == '' or password == '' or address == '' or email == '' or phone == '':
+            return HttpResponse(400)
+
+        user = User(username=username, password=password, address=address, email=email, phone=phone,
+                    is_renter=is_renter)
+        user.save()
+
+        return JsonResponse({'message': 'OK'})
+
+
 # high level API
 class UsersList(generics.ListCreateAPIView):
     queryset = User.objects.all()
@@ -43,3 +69,4 @@ class UsersList(generics.ListCreateAPIView):
 class UserDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+

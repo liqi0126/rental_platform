@@ -1,27 +1,14 @@
 from django.db import models
 from django.utils import timezone
-
+# from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from phone_field import PhoneField
+from django.contrib.auth.models import AbstractUser
 # Create your models here.
 
 
-class Administrator(models.Model):
-    admin = models.CharField(max_length=128, unique=True)
-    password = models.CharField(max_length=256)
-
-    class Meta:
-        app_label = 'user'
-
-
-
-
-class User(models.Model):
-    username = models.CharField(max_length=128, unique=True)
-    password = models.CharField(max_length=256)
+class User(AbstractUser):
     created_at = models.DateTimeField(default=timezone.now)
-
     address = models.CharField(max_length=1000)
-    email = models.EmailField()
     phone = PhoneField(blank=True, help_text='Contact phone number')
 
     # foreign key related name:
@@ -36,9 +23,6 @@ class User(models.Model):
     #   release_applications
     #   received_rent_applications
     #   owned_equipments
-
-    def __str__(self):
-        return self.username
 
     class Meta:
         ordering = ['created_at']

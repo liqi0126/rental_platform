@@ -21,7 +21,7 @@ import equipment.views as equipment_views
 import application.rent_application.views as rent_application_views
 import application.renter_application.views as renter_application_views
 import application.release_application.views as release_application_views
-
+from rest_framework.authtoken import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -36,6 +36,7 @@ urlpatterns = [
     path('api/v1/equipment/<int:pk>', equipment_views.EquipmentDetail.as_view()),
 
     # application related
+
     path('api/v1/renter-application', renter_application_views.RenterApplicationList.as_view()),
     path('api/v1/renter-application/<int:pk>', renter_application_views.RenterApplicationDetail.as_view()),
     path('api/v1/renter-application/<int:pk>/approve', renter_application_views.RenterApplicationAccept.as_view()),
@@ -45,4 +46,5 @@ urlpatterns = [
     path('api/v1/rent-application/<int:pk>', rent_application_views.RentApplicationDetail.as_view()),
     path('api/v1/rent-application/<int:pk>/approve', rent_application_views.RentApplicationAccept.as_view()),
     path('api/v1/rent-application/<int:pk>/reject', rent_application_views.RentApplicationReject.as_view()),
+
 ]
