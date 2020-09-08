@@ -2,7 +2,6 @@ from django.db import models
 from django.utils import timezone
 from phone_field import PhoneField
 
-from rest_framework import serializers
 
 from user.models import User
 # Create your models here.
@@ -44,7 +43,4 @@ class Equipment(models.Model):
     class Meta:
         ordering = ['created_at']
 
-class EquipmentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Equipment
-        fields = '__all__'
+

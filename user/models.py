@@ -1,6 +1,5 @@
 from django.db import models
 from django.utils import timezone
-from rest_framework import serializers
 
 from phone_field import PhoneField
 # Create your models here.
@@ -14,10 +13,6 @@ class Administrator(models.Model):
         app_label = 'user'
 
 
-class AdministratorSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Administrator
-        fields = '__all__'
 
 
 class User(models.Model):
@@ -49,8 +44,3 @@ class User(models.Model):
         ordering = ['created_at']
         app_label = 'user'
 
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = '__all__'
