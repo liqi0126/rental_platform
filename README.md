@@ -262,28 +262,25 @@ pip install django-phone-field
 
 ## API summary
 
+POST：创建
 
+GET：获取
 
-POST
+PUT：更新（全部更新）
 
-GET
+PATCH：部分更新
 
-PUT
-
-PATCH
-
-DELETE
+DELETE：删除
 
 
 
 ### user related
 
-* POST /api/v1/users  # create a new user
 * POST /api/v1/login  # log in
 * POST /api/v1/logout # log out
-* GET /api/v1/users # get all users
-* GET /api/v1/users/:user-id # get user by id
-* DELETE /api/v1/users/:user-id # delete user by id
+* GET/PUT/PATCH/DELETE /api/v1/users/:user-id
+* POST /api/v1/users # 创建新用户
+* GET /api/v1/users # 获取所有用户
 
 
 
