@@ -22,7 +22,7 @@ class Application(models.Model):
     comments = models.TextField()
 
     def __str__(self):
-        return self.id
+        return str(self.id)
 
     class Meta:
         ordering = ['created_at']

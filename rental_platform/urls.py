@@ -35,8 +35,14 @@ urlpatterns = [
     path('api/v1/equipment', equipment_views.EquipmentList.as_view()),
     path('api/v1/equipment/<int:pk>', equipment_views.EquipmentDetail.as_view()),
 
-
     # application related
-    path('api/v1/renter-application', renter_application_views.create_renter_application),
-    path('api/v1/renter-application?page=:page', renter_application_views.get_renter_application)
+    path('api/v1/renter-application', renter_application_views.RenterApplicationList.as_view()),
+    path('api/v1/renter-application/<int:pk>', renter_application_views.RenterApplicationDetail.as_view()),
+    path('api/v1/renter-application/<int:pk>/approve', renter_application_views.RenterApplicationAccept.as_view()),
+    path('api/v1/renter-application/<int:pk>/reject', renter_application_views.RenterApplicationReject.as_view()),
+
+    path('api/v1/rent-application', rent_application_views.RentApplicationList.as_view()),
+    path('api/v1/rent-application/<int:pk>', rent_application_views.RentApplicationDetail.as_view()),
+    path('api/v1/rent-application/<int:pk>/approve', rent_application_views.RentApplicationAccept.as_view()),
+    path('api/v1/rent-application/<int:pk>/reject', rent_application_views.RentApplicationReject.as_view()),
 ]
