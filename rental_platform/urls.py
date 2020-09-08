@@ -26,9 +26,8 @@ import application.release_application.views as release_application_views
 urlpatterns = [
     path('admin/', admin.site.urls),
     # user related
-    path('api/v1/login', user_views.login),
-
-
+    path('api/v1/users/', user_views.get_users),
+    path('api/v1/users/<int:userId>', user_views.get_user_by_id)
     # equipments related
 
 
