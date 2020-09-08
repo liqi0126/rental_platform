@@ -4,6 +4,7 @@ from phone_field import PhoneField
 
 
 from user.models import User
+from django.conf import settings
 # Create your models here.
 
 
@@ -16,7 +17,7 @@ class Equipment(models.Model):
     phone = PhoneField(blank=True, help_text='Contact phone number')
     description = models.TextField()
 
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owned_equipments')
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='owned_equipments')
 
     class EquipmentStatus(models.TextChoices):
         UNRELEASED = 'UNR'
@@ -28,7 +29,7 @@ class Equipment(models.Model):
     status = models.CharField(max_length=3, choices=EquipmentStatus.choices, default=EquipmentStatus.UNRELEASED)
 
     # if it is rented
-    current_tenant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='rented_equipments', blank=True, null=True)
+    current_tenant = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='rented_equipments', blank=True, null=True)
     lease_term_begin = models.DateTimeField(blank=True, null=True)
     lease_term_end = models.DateTimeField(blank=True, null=True)
     user_comments = models.TextField(blank=True, null=True)

@@ -21,7 +21,7 @@ import equipment.views as equipment_views
 import application.rent_application.views as rent_application_views
 import application.renter_application.views as renter_application_views
 import application.release_application.views as release_application_views
-
+from rest_framework.authtoken import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -29,12 +29,11 @@ urlpatterns = [
 
     # user related
     path('api/v1/users/', user_views.UsersList.as_view()),
-    path('api/v1/users/', user_views.UserCreate.as_view()),
     path('api/v1/users/<int:pk>', user_views.UserDetail.as_view()),
 
     # equipments related
     path('api/v1/equipment', equipment_views.EquipmentList.as_view()),
-    path('api/v1/equipment/<int:equipment_id>', equipment_views.EquipmentDetail.as_view()),
+    path('api/v1/equipment/<int:pk>', equipment_views.EquipmentDetail.as_view()),
 
 
     # application related

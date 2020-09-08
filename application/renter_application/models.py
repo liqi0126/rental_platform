@@ -1,16 +1,10 @@
 from django.db import models
+from django.conf import settings
 
 from user.models import User
 from application.models import Application
-from rest_framework import serializers
 # Create your models here.
 
 
 class RenterApplication(Application):
-    applicant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='renter_applications')
-
-
-class RenterApplicationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RenterApplication
-        fields = '__all__'
+    applicant = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='renter_applications')
