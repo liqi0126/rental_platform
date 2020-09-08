@@ -35,5 +35,7 @@ urlpatterns = [
     path('api/v1/equipment/<int:equipment_id>', equipment_views.EquipmentSingle.as_view())
 
 
-    #
+    # application related
+    path('api/v1/renter-application', renter_application_views.create_renter_application)
+
 ]
