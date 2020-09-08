@@ -28,15 +28,16 @@ class Equipment(models.Model):
 
     status = models.CharField(max_length=3, choices=EquipmentStatus.choices, default=EquipmentStatus.UNRELEASED)
 
-    # if it is rented
-    current_tenant = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='rented_equipments', blank=True, null=True)
-    lease_term_begin = models.DateTimeField(blank=True, null=True)
-    lease_term_end = models.DateTimeField(blank=True, null=True)
-    user_comments = models.TextField(blank=True, null=True)
-
     # foreign key related name:
     #   release_applications
     #   rent_applications
+
+    # if it is rented
+    # current_tenant: rent_applications.get(applying=True).hirer
+    # lease_term_begin: rent_applications.get(applying=True).lease_term_begin
+    # user_comments: rent_applications.get(applying=True).user_comments
+
+
 
     def __str__(self):
         return self.name
@@ -44,5 +45,4 @@ class Equipment(models.Model):
     class Meta:
         ordering = ['created_at']
         app_label = 'equipment'
-
 
