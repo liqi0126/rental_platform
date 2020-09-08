@@ -1,5 +1,13 @@
 # rental platform
 
+## dependency
+
+pip install djangorestframework
+
+pip install django-phone-field
+
+
+
 ## Data structure
 
 ### manager
