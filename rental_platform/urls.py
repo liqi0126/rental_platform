@@ -34,6 +34,7 @@ urlpatterns = [
     path('api/v1/equipment/', equipment_views.create_new_equipment),
 
     # equipments relate
+    path('api/v1/equipment', equipment_views.create_new_equipment)
 
 
     #
