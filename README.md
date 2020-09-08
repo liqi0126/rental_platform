@@ -2,9 +2,12 @@
 
 ## dependency
 
-pip install djangorestframework
-
+```shell
+pip install django-allauth
 pip install django-phone-field
+pip install djangorestframework
+pip install django-rest-auth
+```
 
 
 
@@ -89,7 +92,7 @@ pip install django-phone-field
 
 * renter(_id) (设备提供者)
 
-* owner(_id) (租借者)
+* hirer(_id) (租借者)
 * descriptions
   * usage (用途)
   * lease term (租借日期)
