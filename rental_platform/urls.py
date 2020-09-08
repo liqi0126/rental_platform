@@ -28,7 +28,7 @@ urlpatterns = [
     path('api/v1/login', user_views.login),
     # user related
     path('api/v1/users/', user_views.UsersList.as_view()),
-    # path('api/v1/users/<int:userId>', user_views.get_user_by_id),
+    path('api/v1/users/<int:pk>', user_views.UserDetail.as_view()),
 
     # equipments related
     path('api/v1/equipment', equipment_views.create_new_equipment),
