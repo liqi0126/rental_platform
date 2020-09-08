@@ -32,7 +32,7 @@ urlpatterns = [
 
     # equipments related
     path('api/v1/equipment', equipment_views.EquipmentsBatch.as_view()),
-    path('api/v1/equipment/<int:equipment_id>', equipment_views.EquipmentSingle.as_view())
+    path('api/v1/equipment/<int:equipment_id>', equipment_views.EquipmentSingle.as_view()),
 
 
     # application related
