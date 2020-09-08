@@ -27,10 +27,10 @@ class Equipment(models.Model):
     status = models.CharField(max_length=3, choices=EquipmentStatus.choices, default=EquipmentStatus.UNRELEASED)
 
     # if it is rented
-    current_tenant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='rented_equipments')
-    lease_term_begin = models.DateTimeField()
-    lease_term_end = models.DateTimeField()
-    user_comments = models.TextField()
+    current_tenant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='rented_equipments', blank=True, null=True)
+    lease_term_begin = models.DateTimeField(blank=True, null=True)
+    lease_term_end = models.DateTimeField(blank=True, null=True)
+    user_comments = models.TextField(blank=True, null=True)
 
     # foreign key related name:
     #   release_applications
