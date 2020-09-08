@@ -32,8 +32,9 @@ urlpatterns = [
 
     # equipments related
     path('api/v1/equipment', equipment_views.create_new_equipment),
-    path('api/v1/equipment/<int:equipment_id>', equipment_views.get_single_equipment)
+    path('api/v1/equipment/<int:equipment_id>', equipment_views.get_single_equipment),
 
-
+    # users register
+    path('api/v1/register',user_views.register.as_view()),
     #
 ]

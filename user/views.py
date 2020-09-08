@@ -4,11 +4,14 @@ from user.models import User, UserSerializer
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
+
+from django.http import QueryDict, HttpResponse
+
+
 # Create your views here.
 
 
 def login(request):
-
     if request.method != 'POST':
         return JsonResponse({'error': 'require POST'})
 
@@ -50,10 +53,30 @@ class UsersList(APIView):
         except ValueError:
             return Response(f'invalid parameter page: {page}', status=400)
 
-        users = User.objects.all()[(page-1)*size:page*size]
+        users = User.objects.all()[(page - 1) * size:page * size]
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
 
+
+class register(APIView):
+    def patch(self, request, format=None):
+
+        dict = QueryDict(request.body)
+        username = dict.get('username', '')
+        password = dict.get('password', '')
+        address = dict.get('address', '')
+        email = dict.get('email', '')
+        phone = dict.get('phone', '')
+        is_renter = dict.get('is_renter', False)
+
+        if username == '' or password == '' or address == '' or email == '' or phone == '':
+            return HttpResponse(400)
+
+        user = User(username=username, password=password, address=address, email=email, phone=phone,
+                    is_renter=is_renter)
+        user.save()
+
+        return JsonResponse({'message': 'OK'})
 
 # def get_user_by_id(request, userId):
 #     if request.method != 'GET':
