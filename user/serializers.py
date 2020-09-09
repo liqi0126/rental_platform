@@ -1,9 +1,13 @@
 from abc import ABC
 
 from rest_framework import serializers
-from equipment.serializers import EquipmentSerializer
-from .models import User
 from rest_auth.registration.serializers import RegisterSerializer
+
+from .models import User
+from equipment.serializers import EquipmentSerializer
+from application.rent_application.serializers import RentApplicationSerializer
+from application.renter_application.serializers import RenterApplicationSerializer
+from application.release_application.serializers import ReleaseApplicationSerializer
 
 
 class MyRegisterSerializer(RegisterSerializer):
@@ -22,7 +26,15 @@ class MyRegisterSerializer(RegisterSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    rented_equipments = EquipmentSerializer(many=True, read_only=True)
+    rent_applications = RentApplicationSerializer(many=True, read_only=True)
+
+    renter_applications = RenterApplicationSerializer(many=True, read_only=True)
+    release_applications = ReleaseApplicationSerializer(many=True, read_only=True)
+    received_rent_applications = RentApplicationSerializer(many=True, read_only=True)
+
     owned_equipments = EquipmentSerializer(many=True, read_only=True)
+
 
     class Meta:
         model = User
