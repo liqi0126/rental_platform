@@ -16,19 +16,19 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls import url
-from allauth.account.views import confirm_email
 
 import user.views as user_views
 import equipment.views as equipment_views
 import application.rent_application.views as rent_application_views
 import application.renter_application.views as renter_application_views
 import application.release_application.views as release_application_views
+from allauth.account.views import confirm_email
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     url(r'^rest-auth/', include('rest_auth.urls')),
     url(r'^rest-auth/registration/', include('rest_auth.registration.urls')),
-    url(r'^account/', include('allauth.urls')),
+    url(r'^accounts/', include('allauth.urls')),
     url(r'^account-rest/registration/account-confirm-email/(?P<key>.+)/$', confirm_email, name='account_confirm_email'),
 
     # user related
