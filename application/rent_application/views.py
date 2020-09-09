@@ -11,6 +11,9 @@ from rest_framework import generics
 
 
 class RentApplicationList(APIView):
+
+
+
     def post(self, request, format=None):
         equipment_id = request.POST.get('equipment', '')
         hirer_id = request.POST.get('hirer', '')
