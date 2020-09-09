@@ -7,8 +7,6 @@ from rest_auth.registration.serializers import RegisterSerializer
 
 
 class MyRegisterSerializer(RegisterSerializer):
-    first_name = serializers.CharField(write_only=True)
-    last_name = serializers.CharField(write_only=True)
     is_superuser = serializers.BooleanField(default=False)
     is_staff = serializers.BooleanField(default=False)
 
@@ -23,8 +21,6 @@ class MyRegisterSerializer(RegisterSerializer):
             'email': self.validated_data.get('email', ''),
             # 'is_superuser': self.validated_data.get('is_superuser', False),
             # 'is_staff': self.validated_data.get('is_staff', False)
-            'is_superuser': True,
-            'is_staff': True
         }
 
 
