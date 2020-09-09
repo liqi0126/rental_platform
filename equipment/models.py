@@ -36,9 +36,6 @@ class Equipment(models.Model):
     # current_tenant: rent_applications.get(applying=True).hirer
     # lease_term_begin: rent_applications.get(applying=True).lease_term_begin
     # user_comments: rent_applications.get(applying=True).user_comments
-
-
-
     def __str__(self):
         return self.name
 
