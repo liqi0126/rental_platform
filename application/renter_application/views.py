@@ -12,11 +12,11 @@ from rest_framework.response import Response
 # Create your views here.
 class RenterApplicationList(APIView):
     def post(self, request, format=None):
-        applicant_name = request.POST.get('applicant', '')
+        applicant_id = request.POST.get('applicant', '')
         description = request.POST.get('description', '')
 
         try:
-            applicant = User.objects.get(username=applicant_name)
+            applicant = User.objects.get(id=applicant_id)
         except:
             return JsonResponse({'error': 'no such a user'})
 

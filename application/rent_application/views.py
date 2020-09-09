@@ -11,17 +11,17 @@ from rest_framework.response import Response
 
 class RentApplicationList(APIView):
     def post(self, request, format=None):
-        equipment_name = request.POST.get('equipment', '')
-        hirer_name = request.POST.get('hirer', '')
+        equipment_id = request.POST.get('equipment', '')
+        hirer_id = request.POST.get('hirer', '')
         description = request.POST.get('description', '')
 
         try:
-            hirer = User.objects.get(username=hirer_name)
+            hirer = User.objects.get(id=hirer_id)
         except:
             return JsonResponse({'error': 'no such a user'})
 
         try:
-            equipment = Equipment.objects.get(name=equipment_name)
+            equipment = Equipment.objects.get(id=equipment_id)
         except:
             return JsonResponse({'error': 'no such an equipment'})
 

@@ -11,11 +11,11 @@ from rest_framework.response import Response
 
 class ReleaseApplicationList(APIView):
     def post(self, request, format=None):
-        equipment_name = request.POST.get('equipment', '')
+        equipment_id = request.POST.get('equipment', '')
         description = request.POST.get('description', '')
 
         try:
-            equipment = Equipment.objects.get(name=equipment_name)
+            equipment = Equipment.objects.get(id=equipment_id)
         except:
             return JsonResponse({'error': 'no such an equipment'})
 
