@@ -14,6 +14,8 @@ class RentApplicationList(APIView):
         equipment_id = request.POST.get('equipment', '')
         hirer_id = request.POST.get('hirer', '')
         description = request.POST.get('description', '')
+        lease_term_begin = request.POST.get('lease_term_begin', '')
+        lease_term_end = request.POST.get('lease_term_end', '')
 
         try:
             hirer = User.objects.get(id=hirer_id)
@@ -27,7 +29,8 @@ class RentApplicationList(APIView):
 
         renter = equipment.owner
 
-        rent_application = RentApplication(equipment=equipment, renter=renter, hirer=hirer, description=description)
+        rent_application = RentApplication(equipment=equipment, renter=renter, hirer=hirer, description=description
+                                           , lease_term_begin=lease_term_begin, lease_term_end=lease_term_end)
         rent_application.save()
         serializer = RentApplicationSerializer(rent_application)
         return Response(serializer.data)
@@ -55,7 +58,10 @@ class RentApplicationDetail(APIView):
 class RentApplicationAccept(APIView):
     def post(self, request, pk, format=None):
         rent_application = RentApplication.objects.filter(id=pk)
+        comments = request.POST.get('comments', '')
+        rent_application.update(comments=comments)
         rent_application.update(status='ACC')
+        rent_application.update(applying=True)
         serializer = RentApplicationSerializer(rent_application.first())
         return Response(serializer.data)
 
@@ -63,6 +69,20 @@ class RentApplicationAccept(APIView):
 class RentApplicationReject(APIView):
     def post(self, request, pk, format=None):
         rent_application = RentApplication.objects.filter(id=pk)
+        comments = request.POST.get('comments', '')
+        rent_application.update(comments=comments)
         rent_application.update(status='REJ')
+        rent_application.update(applying=False)
+        serializer = RentApplicationSerializer(rent_application.first())
+        return Response(serializer.data)
+
+
+class RentApplicationReturn(APIView):
+    def post(self, request, pk, format=None):
+        rent_application = RentApplication.objects.filter(id=pk)
+        user_comments = request.POST.get('user_comments', '')
+        rent_application.update(user_comments=user_comments)
+        rent_application.update(status='RET')
+        rent_application.update(applying=False)
         serializer = RentApplicationSerializer(rent_application.first())
         return Response(serializer.data)
