@@ -25,6 +25,3 @@ class UsersList(generics.ListCreateAPIView):
 class UserDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-
-    filter_fields = ['']
-
