@@ -20,6 +20,7 @@ class ReleaseApplicationList(APIView):
             return JsonResponse({'error': 'no such an equipment'})
 
         owner = equipment.owner
+        equipment.status = 'UNA'
 
         release_application = ReleaseApplication(equipment=equipment, owner=owner, description=description)
         release_application.save()
@@ -49,7 +50,12 @@ class ReleaseApplicationDetail(APIView):
 class ReleaseApplicationAccept(APIView):
     def post(self, request, pk, format=None):
         release_application = ReleaseApplication.objects.filter(id=pk)
+        comments = request.POST.get('comments', '')
+        release_application.update(comments=comments)
         release_application.update(status='ACC')
+        print(release_application.first().equipment)
+        # release_equipment = ReleaseApplication.objects.filter(id=release_application.first().equipment.id)
+        # release_equipment.update(status='AVA')
         serializer = ReleaseApplicationSerializer(release_application.first())
         return Response(serializer.data)
 
@@ -57,6 +63,8 @@ class ReleaseApplicationAccept(APIView):
 class ReleaseApplicationReject(APIView):
     def post(self, request, pk, format=None):
         release_application = ReleaseApplication.objects.filter(id=pk)
+        comments = request.POST.get('comments', '')
+        release_application.update(comments=comments)
         release_application.update(status='REJ')
         serializer = ReleaseApplicationSerializer(release_application.first())
         return Response(serializer.data)

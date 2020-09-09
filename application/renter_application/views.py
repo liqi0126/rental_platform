@@ -48,6 +48,8 @@ class RenterApplicationDetail(APIView):
 class RenterApplicationAccept(APIView):
     def post(self, request, pk, format=None):
         renter_application = RenterApplication.objects.filter(id=pk)
+        comments = request.POST.get('comments', '')
+        renter_application.update(comments=comments)
         renter_application.update(status='ACC')
         serializer = RenterApplicationSerializer(renter_application.first())
         return Response(serializer.data)
@@ -56,6 +58,8 @@ class RenterApplicationAccept(APIView):
 class RenterApplicationReject(APIView):
     def post(self, request, pk, format=None):
         renter_application = RenterApplication.objects.filter(id=pk)
+        comments = request.POST.get('comments', '')
+        renter_application.update(comments=comments)
         renter_application.update(status='REJ')
         serializer = RenterApplicationSerializer(renter_application.first())
         return Response(serializer.data)
