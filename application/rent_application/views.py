@@ -19,14 +19,14 @@ class RentApplicationList(APIView):
         lease_term_end = request.POST.get('lease_term_end', '')
 
         try:
-            hirer = User.objects.get(id=hirer_id)
-        except:
-            return JsonResponse({'error': 'no such a user'})
-
-        try:
             equipment = Equipment.objects.get(id=equipment_id)
         except:
-            return JsonResponse({'error': 'no such an equipment'})
+            return Response({'error': 'no such an equipment'}, status=400)
+
+        try:
+            hirer = User.objects.get(id=hirer_id)
+        except:
+            return Response({'error': 'no such a user'}, status=400)
 
         renter = equipment.owner
 
@@ -66,6 +66,8 @@ class RentApplicationAccept(APIView):
     def post(self, request, pk, format=None):
         rent_application = RentApplication.objects.filter(id=pk)
         comments = request.POST.get('comments', '')
+        rent_equipment = Equipment.objects.filter(id=rent_application.first().equipment.id)
+        rent_equipment.update(status='REN')
         rent_application.update(comments=comments)
         rent_application.update(status='ACC')
         rent_application.update(applying=True)
@@ -91,8 +93,8 @@ class RentApplicationReturn(APIView):
         rent_application.update(user_comments=user_comments)
         rent_application.update(status='RET')
         rent_application.update(applying=False)
-        release_equipment = Equipment.objects.filter(id=rent_application.first().equipment.id)
-        release_equipment.update(status='RET')
+        rent_equipment = Equipment.objects.filter(id=rent_application.first().equipment.id)
+        rent_equipment.update(status='RET')
         serializer = RentApplicationSerializer(rent_application.first())
         return Response(serializer.data)
 
@@ -103,4 +105,15 @@ class RentApplicationOwnerConfirmReturn(APIView):
         release_equipment = Equipment.objects.filter(id=rent_application.first().equipment.id)
         release_equipment.update(status='AVA')
         serializer = RentApplicationSerializer(rent_application.first())
+        return Response(serializer.data)
+
+
+class RentApplicationOfUser(APIView):
+    def get(self, request, pk, format=None):
+        try:
+            user = User.objects.get(id=pk)
+        except:
+            return Response({'error': 'no such a user'}, status=400)
+        rent_application = RentApplication.objects.filter(hirer=user)
+        serializer = RentApplicationSerializer(rent_application, many=True)
         return Response(serializer.data)

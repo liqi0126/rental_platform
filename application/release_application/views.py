@@ -18,7 +18,7 @@ class ReleaseApplicationList(APIView):
         try:
             equipment = Equipment.objects.get(id=equipment_id)
         except:
-            return JsonResponse({'error': 'no such an equipment'})
+            return Response({'error': 'no such an equipment'}, status=400)
 
         owner = equipment.owner
         equipment.status = 'UNA'
@@ -73,4 +73,15 @@ class ReleaseApplicationReject(APIView):
         release_application.update(comments=comments)
         release_application.update(status='REJ')
         serializer = ReleaseApplicationSerializer(release_application.first())
+        return Response(serializer.data)
+
+
+class ReleaseApplicationOfUser(APIView):
+    def get(self, request, pk, format=None):
+        try:
+            user = User.objects.get(id=pk)
+        except:
+            return Response({'error': 'no such a user'}, status=400)
+        rent_application = ReleaseApplication.objects.filter(owner=user)
+        serializer = ReleaseApplicationSerializer(rent_application, many=True)
         return Response(serializer.data)

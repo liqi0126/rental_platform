@@ -45,6 +45,7 @@ urlpatterns = [
     path('api/v1/renter-application/<int:pk>', renter_application_views.RenterApplicationDetail.as_view()),
     path('api/v1/renter-application/<int:pk>/approve', renter_application_views.RenterApplicationAccept.as_view()),
     path('api/v1/renter-application/<int:pk>/reject', renter_application_views.RenterApplicationReject.as_view()),
+    path('api/v1/renter-application/userId/<int:pk>', renter_application_views.RenterApplicationOfUser.as_view()),
 
     path('api/v1/rent-application', rent_application_views.RentApplicationList.as_view()),
     path('api/v1/rent-application/<int:pk>', rent_application_views.RentApplicationDetail.as_view()),
@@ -52,10 +53,12 @@ urlpatterns = [
     path('api/v1/rent-application/<int:pk>/reject', rent_application_views.RentApplicationReject.as_view()),
     path('api/v1/rent-application/<int:pk>/return', rent_application_views.RentApplicationReturn.as_view()),
     path('api/v1/rent-application/<int:pk>/return/confirm', rent_application_views.RentApplicationOwnerConfirmReturn.as_view()),
+    path('api/v1/rent-application/userId/<int:pk>', rent_application_views.RentApplicationOfUser.as_view()),
 
     path('api/v1/release-application', release_application_views.ReleaseApplicationList.as_view()),
     path('api/v1/release-application/<int:pk>', release_application_views.ReleaseApplicationDetail.as_view()),
     path('api/v1/release-application/<int:pk>/approve', release_application_views.ReleaseApplicationAccept.as_view()),
     path('api/v1/release-application/<int:pk>/reject', release_application_views.ReleaseApplicationReject.as_view()),
+    path('api/v1/release-application/userId/<int:pk>', release_application_views.ReleaseApplicationOfUser.as_view()),
 
 ]
