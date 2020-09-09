@@ -7,6 +7,7 @@ from user.models import User
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework import generics
 
 
 class ReleaseApplicationList(APIView):
@@ -33,18 +34,24 @@ class ReleaseApplicationList(APIView):
         return Response(serializer.data)
 
 
-class ReleaseApplicationDetail(APIView):
-    def get(self, request, pk, format=None):
-        release_application = ReleaseApplication.objects.filter(id=pk)
-        serializer = ReleaseApplicationSerializer(release_application.first())
-        return Response(serializer.data)
+# high level API
+class ReleaseApplicationDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = ReleaseApplication.objects.all()
+    serializer_class = ReleaseApplicationSerializer
 
-    def delete(self, request, pk, format=None):
-        try:
-            ReleaseApplication.objects.filter(id=pk).delete()
-            return JsonResponse('ok', safe=False)
-        except:
-            return JsonResponse('error', safe=False)
+
+# class ReleaseApplicationDetail(APIView):
+#     def get(self, request, pk, format=None):
+#         release_application = ReleaseApplication.objects.filter(id=pk)
+#         serializer = ReleaseApplicationSerializer(release_application.first())
+#         return Response(serializer.data)
+#
+#     def delete(self, request, pk, format=None):
+#         try:
+#             ReleaseApplication.objects.filter(id=pk).delete()
+#             return JsonResponse('ok', safe=False)
+#         except:
+#             return JsonResponse('error', safe=False)
 
 
 class ReleaseApplicationAccept(APIView):

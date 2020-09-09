@@ -7,6 +7,7 @@ from user.models import User
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework import generics
 
 
 class RentApplicationList(APIView):
@@ -41,18 +42,24 @@ class RentApplicationList(APIView):
         return Response(serializer.data)
 
 
-class RentApplicationDetail(APIView):
-    def get(self, request, pk, format=None):
-        rent_application = RentApplication.objects.filter(id=pk)
-        serializer = RentApplicationSerializer(rent_application.first())
-        return Response(serializer.data)
+# high level API
+class RentApplicationDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = RentApplication.objects.all()
+    serializer_class = RentApplicationSerializer
 
-    def delete(self, request, pk, format=None):
-        try:
-            RentApplication.objects.filter(id=pk).delete()
-            return JsonResponse('ok', safe=False)
-        except:
-            return JsonResponse('error', safe=False)
+
+# class RentApplicationDetail(APIView):
+#     def get(self, request, pk, format=None):
+#         rent_application = RentApplication.objects.filter(id=pk)
+#         serializer = RentApplicationSerializer(rent_application.first())
+#         return Response(serializer.data)
+#
+#     def delete(self, request, pk, format=None):
+#         try:
+#             RentApplication.objects.filter(id=pk).delete()
+#             return JsonResponse('ok', safe=False)
+#         except:
+#             return JsonResponse('error', safe=False)
 
 
 class RentApplicationAccept(APIView):
