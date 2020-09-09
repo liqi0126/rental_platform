@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils import timezone
-from phone_field import PhoneField
+from django.core import validators
 
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
@@ -37,7 +37,8 @@ class User(AbstractUser):
     email = models.EmailField(_('email address'), unique=True)
     created_at = models.DateTimeField(default=timezone.now)
     address = models.CharField(max_length=1000)
-    phone = PhoneField(blank=True, help_text='Contact phone number')
+    phone = models.CharField(validators=[validators.RegexValidator("1[345678]\d{9}",message='Please Enter the right phone number!')],
+                             max_length=20)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

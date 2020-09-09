@@ -1,7 +1,6 @@
 from django.db import models
 from django.utils import timezone
-from phone_field import PhoneField
-
+from django.core import validators
 
 from user.models import User
 from django.conf import settings
@@ -14,7 +13,8 @@ class Equipment(models.Model):
 
     address = models.CharField(max_length=1000)
     email = models.EmailField()
-    phone = PhoneField(blank=True, help_text='Contact phone number')
+    phone = models.CharField(validators=[validators.RegexValidator("1[345678]\d{9}",message='Please Enter the right phone number!')],
+                             max_length=20)
     description = models.TextField()
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='owned_equipments')
