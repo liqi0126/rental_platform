@@ -13,6 +13,7 @@ import json
 
 # Create your views here.
 class RenterApplicationList(APIView):
+
     def post(self, request, format=None):
         applicant_id = request.POST.get('applicant', '')
         description = request.POST.get('description', '')
@@ -32,7 +33,7 @@ class RenterApplicationList(APIView):
         size = request.POST.get('size', 5)
         user_id = request.POST.get('user_id', 0)
         is_asc = request.POST.get('is_asc', 'True')
-        application_status = request.POST.get('application_status', '')
+        # application_status = request.POST.get('application_status', '')
         renter_application_list = RenterApplication.objects.all()
         if user_id != 0:
             try:
@@ -46,14 +47,16 @@ class RenterApplicationList(APIView):
             renter_application_list = renter_application_list.order_by('-id')
         else:
             Response({'error': 'no such a sort_order'}, status=400)
-        if application_status != '':
-            if application_status != 'UNA' and application_status != 'ACC' and application_status != 'REJ':
-                return Response({'error': 'no such a status'}, status=400)
-            else:
-                renter_application_list = renter_application_list.filter(status=application_status)
+        # if application_status != '':
+        #     if application_status != 'UNA' and application_status != 'ACC' and application_status != 'REJ':
+        #         return Response({'error': 'no such a status'}, status=400)
+        #     else:
+        #         renter_application_list = renter_application_list.filter(status=application_status)
         renter_application_list = renter_application_list[(page-1)*size:page*size]
         serializer = RenterApplicationSerializer(renter_application_list, many=True)
         return Response(serializer.data)
+
+    filter_fields = ['status']
 
 
 # high level API

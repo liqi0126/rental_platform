@@ -41,7 +41,7 @@ urlpatterns = [
 
     # application related
 
-    path('api/v1/renter-application', renter_application_views.RenterApplicationList.as_view()),
+    path('api/v1/renter-application/', renter_application_views.RenterApplicationList.as_view()),
     path('api/v1/renter-application/<int:pk>', renter_application_views.RenterApplicationDetail.as_view()),
     path('api/v1/renter-application/<int:pk>/approve', renter_application_views.RenterApplicationAccept.as_view()),
     path('api/v1/renter-application/<int:pk>/reject', renter_application_views.RenterApplicationReject.as_view()),
