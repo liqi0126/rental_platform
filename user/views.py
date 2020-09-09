@@ -17,8 +17,8 @@ class UsersList(generics.ListCreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-    filter_fields = ['email']
-    search_fields = ['email']
+    filter_fields = '__all__'
+    search_fields = ['first_name', 'last_name', 'address']
     ordering_fields = '__all__'
 
 

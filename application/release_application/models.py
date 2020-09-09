@@ -9,5 +9,5 @@ from django.conf import settings
 
 
 class ReleaseApplication(Application):
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='release_applications')
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='release_applications', blank=True)
     equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE, related_name='release_applications')

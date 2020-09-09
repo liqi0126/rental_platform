@@ -10,39 +10,54 @@ from rest_framework.response import Response
 from rest_framework import generics
 
 
-class RentApplicationList(APIView):
+class RentApplicationList(generics.ListCreateAPIView):
+    queryset = RentApplication.objects.all()
+    serializer_class = RentApplicationSerializer
 
+    filter_fields = '__all__'
+    search_fields = ['description', 'comments', 'user_comments']
+    ordering_fields = '__all__'
 
-
-    def post(self, request, format=None):
-        equipment_id = request.POST.get('equipment', '')
-        hirer_id = request.POST.get('hirer', '')
-        description = request.POST.get('description', '')
-        lease_term_begin = request.POST.get('lease_term_begin', '')
-        lease_term_end = request.POST.get('lease_term_end', '')
-
+    def perform_create(self, serializer):
+        equipment_id = self.request.POST.get('equipment', '')
         try:
             equipment = Equipment.objects.get(id=equipment_id)
         except:
             return Response({'error': 'no such an equipment'}, status=400)
 
-        try:
-            hirer = User.objects.get(id=hirer_id)
-        except:
-            return Response({'error': 'no such a user'}, status=400)
+        serializer.save(renter=equipment.owner)
 
-        renter = equipment.owner
-
-        rent_application = RentApplication(equipment=equipment, renter=renter, hirer=hirer, description=description
-                                           , lease_term_begin=lease_term_begin, lease_term_end=lease_term_end)
-        rent_application.save()
-        serializer = RentApplicationSerializer(rent_application)
-        return Response(serializer.data)
-
-    def get(self, request, format=None):
-        rent_application_list = RentApplication.objects.all()
-        serializer = RentApplicationSerializer(rent_application_list, many=True)
-        return Response(serializer.data)
+# class RentApplicationList(APIView):
+#
+#     def post(self, request, format=None):
+#         equipment_id = request.POST.get('equipment', '')
+#         hirer_id = request.POST.get('hirer', '')
+#         description = request.POST.get('description', '')
+#         lease_term_begin = request.POST.get('lease_term_begin', '')
+#         lease_term_end = request.POST.get('lease_term_end', '')
+#
+#         try:
+#             equipment = Equipment.objects.get(id=equipment_id)
+#         except:
+#             return Response({'error': 'no such an equipment'}, status=400)
+#
+#         try:
+#             hirer = User.objects.get(id=hirer_id)
+#         except:
+#             return Response({'error': 'no such a user'}, status=400)
+#
+#         renter = equipment.owner
+#
+#         rent_application = RentApplication(equipment=equipment, renter=renter, hirer=hirer, description=description
+#                                            , lease_term_begin=lease_term_begin, lease_term_end=lease_term_end)
+#         rent_application.save()
+#         serializer = RentApplicationSerializer(rent_application)
+#         return Response(serializer.data)
+#
+#     def get(self, request, format=None):
+#         rent_application_list = RentApplication.objects.all()
+#         serializer = RentApplicationSerializer(rent_application_list, many=True)
+#         return Response(serializer.data)
 
 
 # high level API

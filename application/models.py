@@ -19,7 +19,7 @@ class Application(models.Model):
                               choices=ApplicationStatus.choices,
                               default=ApplicationStatus.UNAPPROVED)
 
-    comments = models.TextField()
+    comments = models.TextField(default='')
 
     def __str__(self):
         return str(self.id)
