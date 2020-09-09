@@ -25,7 +25,7 @@ import application.release_application.views as release_application_views
 from allauth.account.views import confirm_email
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('api/v1/admin/', admin.site.urls),
     url(r'^api/v1/rest-auth/', include('rest_auth.urls')),
     url(r'^api/v1/rest-auth/registration/', include('rest_auth.registration.urls')),
     url(r'^api/v1/accounts/', include('allauth.urls')),
