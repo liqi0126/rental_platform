@@ -51,6 +51,7 @@ urlpatterns = [
     path('api/v1/rent-application/<int:pk>/approve', rent_application_views.RentApplicationAccept.as_view()),
     path('api/v1/rent-application/<int:pk>/reject', rent_application_views.RentApplicationReject.as_view()),
     path('api/v1/rent-application/<int:pk>/return', rent_application_views.RentApplicationReturn.as_view()),
+    path('api/v1/rent-application/<int:pk>/return/confirm', rent_application_views.RentApplicationOwnerConfirmReturn.as_view()),
 
     path('api/v1/release-application', release_application_views.ReleaseApplicationList.as_view()),
     path('api/v1/release-application/<int:pk>', release_application_views.ReleaseApplicationDetail.as_view()),

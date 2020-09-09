@@ -53,9 +53,8 @@ class ReleaseApplicationAccept(APIView):
         comments = request.POST.get('comments', '')
         release_application.update(comments=comments)
         release_application.update(status='ACC')
-        print(release_application.first().equipment)
-        # release_equipment = ReleaseApplication.objects.filter(id=release_application.first().equipment.id)
-        # release_equipment.update(status='AVA')
+        release_equipment = Equipment.objects.filter(id=release_application.first().equipment.id)
+        release_equipment.update(status='AVA')
         serializer = ReleaseApplicationSerializer(release_application.first())
         return Response(serializer.data)
 

@@ -84,5 +84,16 @@ class RentApplicationReturn(APIView):
         rent_application.update(user_comments=user_comments)
         rent_application.update(status='RET')
         rent_application.update(applying=False)
+        release_equipment = Equipment.objects.filter(id=rent_application.first().equipment.id)
+        release_equipment.update(status='RET')
+        serializer = RentApplicationSerializer(rent_application.first())
+        return Response(serializer.data)
+
+
+class RentApplicationOwnerConfirmReturn(APIView):
+    def post(self, request, pk, format=None):
+        rent_application = RentApplication.objects.filter(id=pk)
+        release_equipment = Equipment.objects.filter(id=rent_application.first().equipment.id)
+        release_equipment.update(status='AVA')
         serializer = RentApplicationSerializer(rent_application.first())
         return Response(serializer.data)
