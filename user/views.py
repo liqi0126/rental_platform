@@ -17,7 +17,10 @@ class UsersList(generics.ListCreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-    filter_fields = ['email', ]
+    filter_fields = ['email']
+    search_fields = ['email']
+    ordering_fields = '__all__'
+
 
 class UserDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
