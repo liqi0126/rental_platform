@@ -26,40 +26,43 @@ import application.rent_application.views as rent_application_views
 import application.renter_application.views as renter_application_views
 import application.release_application.views as release_application_views
 from allauth.account.views import confirm_email
-# from application.renter_application.views import RenterApplicationViewSet
-# from user.views import UserViewSet
 
-# router = routers.SimpleRouter()
-# router.register(r'api/v1/user', UserViewSet)
-# router.register(r'api/v1/renter-application', RenterApplicationViewSet)
-
-
-from django.middleware.csrf import get_token
-from django.http import JsonResponse
+from application.renter_application.views import RenterApplicationViewSet
+from user.views import UserViewSet
+from equipment.views import EquipmentViewSet
+from application.renter_application.views import RenterApplicationViewSet
 
 
-def get_scsrf(request):
-    csrf_token = get_token(request)
-    return JsonResponse({'token': csrf_token})
+# from django.middleware.csrf import get_token
+# from django.http import JsonResponse
+#
+#
+# def get_scsrf(request):
+#     csrf_token = get_token(request)
+#     return JsonResponse({'token': csrf_token})
 
+
+router = routers.SimpleRouter()
+router.register(r'api/v1/user', UserViewSet)
+router.register(r'api/v1/equipment', EquipmentViewSet)
+router.register(r'api/v1/renter-applications', RenterApplicationViewSet)
 
 
 urlpatterns = [
-    path('api/v1/admin/', admin.site.urls),
+    path('admin/', admin.site.urls),
     url(r'^api/v1/rest-auth/', include('rest_auth.urls')),
     url(r'^api/v1/rest-auth/registration/', include('rest_auth.registration.urls')),
     url(r'^api/v1/accounts/', include('allauth.urls')),
     url(r'^api/v1/account-rest/registration/account-confirm-email/(?P<key>.+)/$', confirm_email, name='account_confirm_email'),
 
 
-    path('api/v1/csrf-token/', get_scsrf),
     # user related
-    path('api/v1/users/', user_views.UsersList.as_view()),
-    path('api/v1/users/<int:pk>', user_views.UserDetail.as_view()),
+    # path('api/v1/users/', user_views.UsersList.as_view()),
+    # path('api/v1/users/<int:pk>', user_views.UserDetail.as_view()),
 
     # equipments related
-    path('api/v1/equipment', equipment_views.EquipmentList.as_view()),
-    path('api/v1/equipment/<int:pk>', equipment_views.EquipmentDetail.as_view()),
+    # path('api/v1/equipment', equipment_views.EquipmentList.as_view()),
+    # path('api/v1/equipment/<int:pk>', equipment_views.EquipmentDetail.as_view()),
 
     # application related
 
@@ -85,4 +88,4 @@ urlpatterns = [
 
 ]
 
-# urlpatterns += router.urls
+urlpatterns += router.urls

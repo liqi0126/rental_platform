@@ -8,8 +8,9 @@ from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import generics
-import json
 
+from rest_framework import viewsets
+from rest_framework.decorators import action
 
 class RenterApplicationList(generics.ListCreateAPIView):
     queryset = RenterApplication.objects.all()
@@ -126,4 +127,31 @@ class RenterApplicationOfUser(APIView):
             return Response({'error': 'no such a user'}, status=400)
         renter_application = RenterApplication.objects.filter(applicant=user)
         serializer = RenterApplicationSerializer(renter_application, many=True)
+        return Response(serializer.data)
+
+
+class RenterApplicationViewSet(viewsets.ModelViewSet):
+    queryset = RenterApplication.objects.all()
+    serializer_class = RenterApplicationSerializer
+
+    filter_fields = '__all__'
+    search_fields = ['description', 'comments']
+    ordering_fields = '__all__'
+
+    @action(detail=True, methods=['post'])
+    def accept(self, request, pk):
+        renter_application = RenterApplication.objects.filter(id=pk)
+        comments = request.POST.get('comments', '')
+        renter_application.update(comments=comments)
+        renter_application.update(status='ACC')
+        serializer = RenterApplicationSerializer(renter_application.first())
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def reject(self, request, pk):
+        renter_application = RenterApplication.objects.filter(id=pk)
+        comments = request.POST.get('comments', '')
+        renter_application.update(comments=comments)
+        renter_application.update(status='REJ')
+        serializer = RenterApplicationSerializer(renter_application.first())
         return Response(serializer.data)
