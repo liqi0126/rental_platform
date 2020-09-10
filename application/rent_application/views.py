@@ -31,32 +31,35 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def approve(self, request, pk):
         rent_application = RentApplication.objects.filter(id=pk)
-        comments = request.POST.get('comments', '')
-        rent_equipment = Equipment.objects.filter(id=rent_application.first().equipment.id)
-        rent_equipment.update(status='REN')
-        rent_equipment.update(borrower=RentApplication.objects.get(id=pk).borrower)
-        rent_application.update(comments=comments)
-        rent_application.update(status='ACC')
-        rent_application.update(applying=True)
-        serializer = RentApplicationSerializer(rent_application.first())
-        logger.info('change the status of the rent application: { id: ' + str(rent_application.first().id)
-                    + ' } to accepted and change the status of the equipment to rented')
-        email_address = RentApplication.objects.get(id=pk).renter
-        equipment = Equipment.objects.get(id=rent_application.first().equipment.id)
-        send_mail('[example.com] Please Check Your Application Status Updates'
-                  , 'Hello from example.com!\n\n'
-                    'You\'re receiving this e-mail because your RENT application for certain equipment: \n\n'
-                    'name: ' + equipment.name +
-                    '\nowner: ' + equipment.owner.first_name + ' ' + equipment.owner.last_name +
-                    '\ndescription: ' + equipment.description +
-                    '\nphone: ' + equipment.phone +
-                    '\nemail: ' + equipment.email +
-                    '\naddress: ' + equipment.address + '\n\n'                                                           
-                    'has been APPROVED by the '
-                    'administrator with comments as below: \n\n' + '"' + comments + '"' +
-                  '\n\nThank you from example.com!\n'
-                  'example.com'
-                  , '624275030@qq.com', [email_address], fail_silently=False)
+        if Equipment.objects.get(id=rent_application.first().equipment.id).status != 'REN':
+            comments = request.POST.get('comments', '')
+            rent_equipment = Equipment.objects.filter(id=rent_application.first().equipment.id)
+            rent_equipment.update(status='REN')
+            rent_equipment.update(borrower=RentApplication.objects.get(id=pk).borrower)
+            rent_application.update(comments=comments)
+            rent_application.update(status='ACC')
+            rent_application.update(applying=True)
+            serializer = RentApplicationSerializer(rent_application.first())
+            logger.info('change the status of the rent application: { id: ' + str(rent_application.first().id)
+                        + ' } to accepted and change the status of the equipment to rented')
+            email_address = RentApplication.objects.get(id=pk).borrower
+            equipment = Equipment.objects.get(id=rent_application.first().equipment.id)
+            send_mail('[example.com] Please Check Your Application Status Updates'
+                      , 'Hello from example.com!\n\n'
+                        'You\'re receiving this e-mail because your RENT application for certain equipment: \n\n'
+                        'name: ' + equipment.name +
+                        '\nowner: ' + equipment.owner.first_name + ' ' + equipment.owner.last_name +
+                        '\ndescription: ' + equipment.description +
+                        '\nphone: ' + equipment.phone +
+                        '\nemail: ' + equipment.email +
+                        '\naddress: ' + equipment.address + '\n\n'                                                           
+                        'has been APPROVED by the '
+                        'administrator with comments as below: \n\n' + '"' + comments + '"' +
+                      '\n\nThank you from example.com!\n'
+                      'example.com'
+                      , '624275030@qq.com', [email_address], fail_silently=False)
+        else:
+            return Response({'error': 'the equipment has already been rented'}, status=400)
         return Response(serializer.data)
 
     @action(detail=True, methods=['post'])
@@ -69,7 +72,7 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
         serializer = RentApplicationSerializer(rent_application.first())
         logger.info('change the status of the rent application: { id: ' + str(rent_application.first().id)
                     + ' } to rejected')
-        email_address = RentApplication.objects.get(id=pk).renter
+        email_address = RentApplication.objects.get(id=pk).borrower
         equipment = Equipment.objects.get(id=rent_application.first().equipment.id)
         Equipment.objects.filter(id=rent_application.first().equipment.id).update(borrower=None)
         send_mail('[example.com] Please Check Your Application Status Updates'
@@ -95,7 +98,7 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
             user_comments = request.POST.get('user_comments', '')
             rent_application.update(user_comments=user_comments)
             # rent_application.update(status='RET')
-            rent_application.update(applying=False)
+            # rent_application.update(applying=False)
             rent_equipment = Equipment.objects.filter(id=rent_application.first().equipment.id)
             rent_equipment.update(status='RET')
             rent_equipment.update(borrower=None)
@@ -111,9 +114,10 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
         rent_application = RentApplication.objects.filter(id=pk)
         if Equipment.objects.get(id=rent_application.first().equipment.id).status == 'RET':
             rent_application = RentApplication.objects.filter(id=pk)
-            release_equipment = Equipment.objects.filter(id=rent_application.first().equipment.id)
-            release_equipment.update(status='AVA')
-            release_equipment.update(borrower=None)
+            rent_equipment = Equipment.objects.filter(id=rent_application.first().equipment.id)
+            rent_equipment.update(status='AVA')
+            rent_equipment.update(borrower=None)
+            rent_application.update(applying=False)
             serializer = RentApplicationSerializer(rent_application.first())
             logger.info('keep the status of the rent application: { id: ' + str(rent_application.first().id)
                         + ' } as returned and change the status of the equipment to available')
