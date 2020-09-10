@@ -18,6 +18,7 @@ class Equipment(models.Model):
     description = models.TextField()
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='owned_equipments')
+    borrower = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='rented_equipments', null=True, blank=True)
 
     class EquipmentStatus(models.TextChoices):
         UNRELEASED = 'UNR'
