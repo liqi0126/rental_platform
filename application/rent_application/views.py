@@ -6,6 +6,11 @@ from rest_framework.response import Response
 from rest_framework import viewsets
 from rest_framework.decorators import action
 
+import logging
+
+# 生成一个以当前文件名为名字的logger实例
+logger = logging.getLogger(__name__)
+
 
 class RentApplicationViewSet(viewsets.ModelViewSet):
     queryset = RentApplication.objects.all()
@@ -17,7 +22,8 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
             equipment = Equipment.objects.get(id=equipment_id)
         except:
             return Response({'error': 'no such an equipment'}, status=400)
-
+        logger.info('create a rent application with equipment: { id: ' + str(equipment.id) + ', name: ' + str(
+            equipment.name) + '}')
         serializer.save(renter=equipment.owner)
 
     @action(detail=True, methods=['post'])
@@ -30,6 +36,8 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
         rent_application.update(status='ACC')
         rent_application.update(applying=True)
         serializer = RentApplicationSerializer(rent_application.first())
+        logger.info('change the status of the rent application: { id: ' + str(rent_application.first().id)
+                    + ' } to accepted and change the status of the equipment to rented')
         return Response(serializer.data)
 
     @action(detail=True, methods=['post'])
@@ -40,6 +48,8 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
         rent_application.update(status='REJ')
         rent_application.update(applying=False)
         serializer = RentApplicationSerializer(rent_application.first())
+        logger.info('change the status of the rent application: { id: ' + str(rent_application.first().id)
+                    + ' } to rejected')
         return Response(serializer.data)
 
     @action(detail=True, methods=['post'], url_path='return')
@@ -52,6 +62,8 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
         rent_equipment = Equipment.objects.filter(id=rent_application.first().equipment.id)
         rent_equipment.update(status='RET')
         serializer = RentApplicationSerializer(rent_application.first())
+        logger.info('change the status of the rent application: { id: ' + str(rent_application.first().id)
+                    + ' } to returned and change the status of the equipment to returned')
         return Response(serializer.data)
 
     @action(detail=True, methods=['post'], url_path='return/confirm')
@@ -60,7 +72,23 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
         release_equipment = Equipment.objects.filter(id=rent_application.first().equipment.id)
         release_equipment.update(status='AVA')
         serializer = RentApplicationSerializer(rent_application.first())
+        logger.info('keep the status of the rent application: { id: ' + str(rent_application.first().id)
+                    + ' } as returned and change the status of the equipment to available')
         return Response(serializer.data)
+
+    def perform_update(self, serializer):
+        if self.request.method == 'PUT':
+            logger.info('update a rent application(through put): ' + str(serializer.validated_data))
+        serializer.save()
+
+    def partial_update(self, request, *args, **kwargs):
+        kwargs['partial'] = True
+        logger.info('update a rent application(through patch): ' + str(request.data))
+        return self.update(request, *args, **kwargs)
+
+    def perform_destroy(self, instance):
+        logger.info('delete a rent application: ' + str(instance))
+        instance.delete()
 
     filter_fields = '__all__'
     search_fields = ['description', 'comments', 'user_comments']
