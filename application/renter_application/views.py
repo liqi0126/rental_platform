@@ -12,13 +12,13 @@ from rest_framework import generics
 from rest_framework import viewsets
 from rest_framework.decorators import action
 
-class RenterApplicationList(generics.ListCreateAPIView):
-    queryset = RenterApplication.objects.all()
-    serializer_class = RenterApplicationSerializer
-
-    filter_fields = '__all__'
-    search_fields = ['description', 'comments']
-    ordering_fields = '__all__'
+# class RenterApplicationList(generics.ListCreateAPIView):
+#     queryset = RenterApplication.objects.all()
+#     serializer_class = RenterApplicationSerializer
+#
+#     filter_fields = '__all__'
+#     search_fields = ['description', 'comments']
+#     ordering_fields = '__all__'
 
     # def perform_create(self, serializer):
     #     applicant_id = self.request.POST.get('applicant', '')
@@ -80,9 +80,9 @@ class RenterApplicationList(generics.ListCreateAPIView):
 
 
 # high level API
-class RenterApplicationDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = RenterApplication.objects.all()
-    serializer_class = RenterApplicationSerializer
+# class RenterApplicationDetail(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = RenterApplication.objects.all()
+#     serializer_class = RenterApplicationSerializer
 
 
 # class RenterApplicationDetail(APIView):
@@ -99,35 +99,35 @@ class RenterApplicationDetail(generics.RetrieveUpdateDestroyAPIView):
 #             return JsonResponse('error', safe=False)
 
 
-class RenterApplicationAccept(APIView):
-    def post(self, request, pk, format=None):
-        renter_application = RenterApplication.objects.filter(id=pk)
-        comments = request.POST.get('comments', '')
-        renter_application.update(comments=comments)
-        renter_application.update(status='ACC')
-        serializer = RenterApplicationSerializer(renter_application.first())
-        return Response(serializer.data)
+# class RenterApplicationAccept(APIView):
+#     def post(self, request, pk, format=None):
+#         renter_application = RenterApplication.objects.filter(id=pk)
+#         comments = request.POST.get('comments', '')
+#         renter_application.update(comments=comments)
+#         renter_application.update(status='ACC')
+#         serializer = RenterApplicationSerializer(renter_application.first())
+#         return Response(serializer.data)
+#
+#
+# class RenterApplicationReject(APIView):
+#     def post(self, request, pk, format=None):
+#         renter_application = RenterApplication.objects.filter(id=pk)
+#         comments = request.POST.get('comments', '')
+#         renter_application.update(comments=comments)
+#         renter_application.update(status='REJ')
+#         serializer = RenterApplicationSerializer(renter_application.first())
+#         return Response(serializer.data)
 
 
-class RenterApplicationReject(APIView):
-    def post(self, request, pk, format=None):
-        renter_application = RenterApplication.objects.filter(id=pk)
-        comments = request.POST.get('comments', '')
-        renter_application.update(comments=comments)
-        renter_application.update(status='REJ')
-        serializer = RenterApplicationSerializer(renter_application.first())
-        return Response(serializer.data)
-
-
-class RenterApplicationOfUser(APIView):
-    def get(self, request, pk, format=None):
-        try:
-            user = User.objects.get(id=pk)
-        except:
-            return Response({'error': 'no such a user'}, status=400)
-        renter_application = RenterApplication.objects.filter(applicant=user)
-        serializer = RenterApplicationSerializer(renter_application, many=True)
-        return Response(serializer.data)
+# class RenterApplicationOfUser(APIView):
+#     def get(self, request, pk, format=None):
+#         try:
+#             user = User.objects.get(id=pk)
+#         except:
+#             return Response({'error': 'no such a user'}, status=400)
+#         renter_application = RenterApplication.objects.filter(applicant=user)
+#         serializer = RenterApplicationSerializer(renter_application, many=True)
+#         return Response(serializer.data)
 
 
 class RenterApplicationViewSet(viewsets.ModelViewSet):
@@ -139,7 +139,7 @@ class RenterApplicationViewSet(viewsets.ModelViewSet):
     ordering_fields = '__all__'
 
     @action(detail=True, methods=['post'])
-    def accept(self, request, pk):
+    def approve(self, request, pk):
         renter_application = RenterApplication.objects.filter(id=pk)
         comments = request.POST.get('comments', '')
         renter_application.update(comments=comments)

@@ -9,25 +9,28 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import generics
 
+from rest_framework import viewsets
+from rest_framework.decorators import action
 
-class ReleaseApplicationList(generics.ListCreateAPIView):
-    queryset = ReleaseApplication.objects.all()
-    serializer_class = ReleaseApplicationSerializer
 
-    filter_fields = '__all__'
-    search_fields = ['description', 'comments']
-    ordering_fields = '__all__'
-
-    def perform_create(self, serializer):
-        equipment_id = self.request.POST.get('equipment', '')
-        try:
-            equipment = Equipment.objects.get(id=equipment_id)
-        except:
-            return Response({'error': 'no such an equipment'}, status=400)
-
-        release_equipment = Equipment.objects.filter(id=equipment.id)
-        release_equipment.update(status='UNA')
-        serializer.save(owner=equipment.owner)
+# class ReleaseApplicationList(generics.ListCreateAPIView):
+#     queryset = ReleaseApplication.objects.all()
+#     serializer_class = ReleaseApplicationSerializer
+#
+#     filter_fields = '__all__'
+#     search_fields = ['description', 'comments']
+#     ordering_fields = '__all__'
+#
+#     def perform_create(self, serializer):
+#         equipment_id = self.request.POST.get('equipment', '')
+#         try:
+#             equipment = Equipment.objects.get(id=equipment_id)
+#         except:
+#             return Response({'error': 'no such an equipment'}, status=400)
+#
+#         release_equipment = Equipment.objects.filter(id=equipment.id)
+#         release_equipment.update(status='UNA')
+#         serializer.save(owner=equipment.owner)
 
 # class ReleaseApplicationList(APIView):
 #     def post(self, request, format=None):
@@ -54,9 +57,9 @@ class ReleaseApplicationList(generics.ListCreateAPIView):
 
 
 # high level API
-class ReleaseApplicationDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = ReleaseApplication.objects.all()
-    serializer_class = ReleaseApplicationSerializer
+# class ReleaseApplicationDetail(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = ReleaseApplication.objects.all()
+#     serializer_class = ReleaseApplicationSerializer
 
 
 # class ReleaseApplicationDetail(APIView):
@@ -73,8 +76,60 @@ class ReleaseApplicationDetail(generics.RetrieveUpdateDestroyAPIView):
 #             return JsonResponse('error', safe=False)
 
 
-class ReleaseApplicationAccept(APIView):
-    def post(self, request, pk, format=None):
+# class ReleaseApplicationAccept(APIView):
+#     def post(self, request, pk, format=None):
+#         release_application = ReleaseApplication.objects.filter(id=pk)
+#         comments = request.POST.get('comments', '')
+#         release_application.update(comments=comments)
+#         release_application.update(status='ACC')
+#         release_equipment = Equipment.objects.filter(id=release_application.first().equipment.id)
+#         release_equipment.update(status='AVA')
+#         serializer = ReleaseApplicationSerializer(release_application.first())
+#         return Response(serializer.data)
+#
+#
+# class ReleaseApplicationReject(APIView):
+#     def post(self, request, pk, format=None):
+#         release_application = ReleaseApplication.objects.filter(id=pk)
+#         comments = request.POST.get('comments', '')
+#         release_application.update(comments=comments)
+#         release_application.update(status='REJ')
+#         serializer = ReleaseApplicationSerializer(release_application.first())
+#         return Response(serializer.data)
+
+
+# class ReleaseApplicationOfUser(APIView):
+#     def get(self, request, pk, format=None):
+#         try:
+#             user = User.objects.get(id=pk)
+#         except:
+#             return Response({'error': 'no such a user'}, status=400)
+#         rent_application = ReleaseApplication.objects.filter(owner=user)
+#         serializer = ReleaseApplicationSerializer(rent_application, many=True)
+#         return Response(serializer.data)
+
+
+class ReleaseApplicationViewSet(viewsets.ModelViewSet):
+    queryset = ReleaseApplication.objects.all()
+    serializer_class = ReleaseApplicationSerializer
+
+    filter_fields = '__all__'
+    search_fields = ['description', 'comments']
+    ordering_fields = '__all__'
+
+    def perform_create(self, serializer):
+        equipment_id = self.request.POST.get('equipment', '')
+        try:
+            equipment = Equipment.objects.get(id=equipment_id)
+        except:
+            return Response({'error': 'no such an equipment'}, status=400)
+
+        release_equipment = Equipment.objects.filter(id=equipment.id)
+        release_equipment.update(status='UNA')
+        serializer.save(owner=equipment.owner)
+
+    @action(detail=True, methods=['post'])
+    def approve(self, request, pk):
         release_application = ReleaseApplication.objects.filter(id=pk)
         comments = request.POST.get('comments', '')
         release_application.update(comments=comments)
@@ -84,9 +139,8 @@ class ReleaseApplicationAccept(APIView):
         serializer = ReleaseApplicationSerializer(release_application.first())
         return Response(serializer.data)
 
-
-class ReleaseApplicationReject(APIView):
-    def post(self, request, pk, format=None):
+    @action(detail=True, methods=['post'])
+    def reject(self, request, pk):
         release_application = ReleaseApplication.objects.filter(id=pk)
         comments = request.POST.get('comments', '')
         release_application.update(comments=comments)
@@ -94,13 +148,11 @@ class ReleaseApplicationReject(APIView):
         serializer = ReleaseApplicationSerializer(release_application.first())
         return Response(serializer.data)
 
-
-class ReleaseApplicationOfUser(APIView):
-    def get(self, request, pk, format=None):
-        try:
-            user = User.objects.get(id=pk)
-        except:
-            return Response({'error': 'no such a user'}, status=400)
-        rent_application = ReleaseApplication.objects.filter(owner=user)
-        serializer = ReleaseApplicationSerializer(rent_application, many=True)
+    @action(detail=True, methods=['post'])
+    def reject(self, request, pk):
+        release_application = ReleaseApplication.objects.filter(id=pk)
+        comments = request.POST.get('comments', '')
+        release_application.update(comments=comments)
+        release_application.update(status='REJ')
+        serializer = ReleaseApplicationSerializer(release_application.first())
         return Response(serializer.data)

@@ -31,6 +31,8 @@ from application.renter_application.views import RenterApplicationViewSet
 from user.views import UserViewSet
 from equipment.views import EquipmentViewSet
 from application.renter_application.views import RenterApplicationViewSet
+from application.rent_application.views import RentApplicationViewSet
+from application.release_application.views import ReleaseApplicationViewSet
 
 
 # from django.middleware.csrf import get_token
@@ -45,7 +47,9 @@ from application.renter_application.views import RenterApplicationViewSet
 router = routers.SimpleRouter()
 router.register(r'api/v1/user', UserViewSet)
 router.register(r'api/v1/equipment', EquipmentViewSet)
-router.register(r'api/v1/renter-applications', RenterApplicationViewSet)
+router.register(r'api/v1/renter-application', RenterApplicationViewSet)
+router.register(r'api/v1/rent-application', RentApplicationViewSet)
+router.register(r'api/v1/release-application', ReleaseApplicationViewSet)
 
 
 urlpatterns = [
@@ -66,25 +70,25 @@ urlpatterns = [
 
     # application related
 
-    path('api/v1/renter-application/', renter_application_views.RenterApplicationList.as_view()),
-    path('api/v1/renter-application/<int:pk>', renter_application_views.RenterApplicationDetail.as_view()),
-    path('api/v1/renter-application/<int:pk>/approve', renter_application_views.RenterApplicationAccept.as_view()),
-    path('api/v1/renter-application/<int:pk>/reject', renter_application_views.RenterApplicationReject.as_view()),
-    path('api/v1/renter-application/userId/<int:pk>', renter_application_views.RenterApplicationOfUser.as_view()),
+    # path('api/v1/renter-application/', renter_application_views.RenterApplicationList.as_view()),
+    # path('api/v1/renter-application/<int:pk>', renter_application_views.RenterApplicationDetail.as_view()),
+    # path('api/v1/renter-application/<int:pk>/approve', renter_application_views.RenterApplicationAccept.as_view()),
+    # path('api/v1/renter-application/<int:pk>/reject', renter_application_views.RenterApplicationReject.as_view()),
+    # path('api/v1/renter-application/userId/<int:pk>', renter_application_views.RenterApplicationOfUser.as_view()),
 
-    path('api/v1/rent-application', rent_application_views.RentApplicationList.as_view()),
-    path('api/v1/rent-application/<int:pk>', rent_application_views.RentApplicationDetail.as_view()),
-    path('api/v1/rent-application/<int:pk>/approve', rent_application_views.RentApplicationAccept.as_view()),
-    path('api/v1/rent-application/<int:pk>/reject', rent_application_views.RentApplicationReject.as_view()),
-    path('api/v1/rent-application/<int:pk>/return', rent_application_views.RentApplicationReturn.as_view()),
-    path('api/v1/rent-application/<int:pk>/return/confirm', rent_application_views.RentApplicationOwnerConfirmReturn.as_view()),
-    path('api/v1/rent-application/userId/<int:pk>', rent_application_views.RentApplicationOfUser.as_view()),
+    # path('api/v1/rent-application', rent_application_views.RentApplicationList.as_view()),
+    # path('api/v1/rent-application/<int:pk>', rent_application_views.RentApplicationDetail.as_view()),
+    # path('api/v1/rent-application/<int:pk>/approve', rent_application_views.RentApplicationAccept.as_view()),
+    # path('api/v1/rent-application/<int:pk>/reject', rent_application_views.RentApplicationReject.as_view()),
+    # path('api/v1/rent-application/<int:pk>/return', rent_application_views.RentApplicationReturn.as_view()),
+    # path('api/v1/rent-application/<int:pk>/return/confirm', rent_application_views.RentApplicationOwnerConfirmReturn.as_view()),
+    # path('api/v1/rent-application/userId/<int:pk>', rent_application_views.RentApplicationOfUser.as_view()),
 
-    path('api/v1/release-application', release_application_views.ReleaseApplicationList.as_view()),
-    path('api/v1/release-application/<int:pk>', release_application_views.ReleaseApplicationDetail.as_view()),
-    path('api/v1/release-application/<int:pk>/approve', release_application_views.ReleaseApplicationAccept.as_view()),
-    path('api/v1/release-application/<int:pk>/reject', release_application_views.ReleaseApplicationReject.as_view()),
-    path('api/v1/release-application/userId/<int:pk>', release_application_views.ReleaseApplicationOfUser.as_view()),
+    # path('api/v1/release-application', release_application_views.ReleaseApplicationList.as_view()),
+    # path('api/v1/release-application/<int:pk>', release_application_views.ReleaseApplicationDetail.as_view()),
+    # path('api/v1/release-application/<int:pk>/approve', release_application_views.ReleaseApplicationAccept.as_view()),
+    # path('api/v1/release-application/<int:pk>/reject', release_application_views.ReleaseApplicationReject.as_view()),
+    # path('api/v1/release-application/userId/<int:pk>', release_application_views.ReleaseApplicationOfUser.as_view()),
 
 ]
 
