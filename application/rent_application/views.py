@@ -6,6 +6,8 @@ from rest_framework.response import Response
 from rest_framework import viewsets
 from rest_framework.decorators import action
 
+from django.core.mail import send_mail
+
 import logging
 
 # 生成一个以当前文件名为名字的logger实例
@@ -38,6 +40,22 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
         serializer = RentApplicationSerializer(rent_application.first())
         logger.info('change the status of the rent application: { id: ' + str(rent_application.first().id)
                     + ' } to accepted and change the status of the equipment to rented')
+        email_address = RentApplication.objects.get(id=pk).hirer
+        equipment = Equipment.objects.get(id=rent_application.first().equipment.id)
+        send_mail('[example.com] Please Check Your Application Status Updates'
+                  , 'Hello from example.com!\n\n'
+                    'You\'re receiving this e-mail because your RENT application for certain equipment: \n\n'
+                    'name: ' + equipment.name +
+                    '\nowner: ' + equipment.owner.first_name + ' ' + equipment.owner.last_name +
+                    '\ndescription: ' + equipment.description +
+                    '\nphone: ' + equipment.phone +
+                    '\nemail: ' + equipment.email +
+                    '\naddress: ' + equipment.address + '\n\n'                                                           
+                    'has been APPROVED by the '
+                    'administrator with comments as below: \n\n' + '"' + comments + '"' +
+                  '\n\nThank you from example.com!\n'
+                  'example.com'
+                  , '624275030@qq.com', [email_address], fail_silently=False)
         return Response(serializer.data)
 
     @action(detail=True, methods=['post'])
@@ -50,30 +68,53 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
         serializer = RentApplicationSerializer(rent_application.first())
         logger.info('change the status of the rent application: { id: ' + str(rent_application.first().id)
                     + ' } to rejected')
+        email_address = RentApplication.objects.get(id=pk).hirer
+        equipment = Equipment.objects.get(id=rent_application.first().equipment.id)
+        send_mail('[example.com] Please Check Your Application Status Updates'
+                  , 'Hello from example.com!\n\n'
+                    'You\'re receiving this e-mail because your RENT application for certain equipment: \n\n'
+                    'name: ' + equipment.name +
+                    '\nowner: ' + equipment.owner.first_name + ' ' + equipment.owner.last_name +
+                    '\ndescription: ' + equipment.description +
+                    '\nphone: ' + equipment.phone +
+                    '\nemail: ' + equipment.email +
+                    '\naddress: ' + equipment.address + '\n\n'
+                    'has been REJECTED by the '
+                    'administrator with comments as below: \n\n' + '"' + comments + '"' +
+                    '\n\nThank you from example.com!\n'
+                    'example.com'
+                  , '624275030@qq.com', [email_address], fail_silently=False)
         return Response(serializer.data)
 
     @action(detail=True, methods=['post'], url_path='return')
     def return_post(self, request, pk):
-        rent_application = RentApplication.objects.filter(id=pk)
-        user_comments = request.POST.get('user_comments', '')
-        rent_application.update(user_comments=user_comments)
-        rent_application.update(status='RET')
-        rent_application.update(applying=False)
-        rent_equipment = Equipment.objects.filter(id=rent_application.first().equipment.id)
-        rent_equipment.update(status='RET')
-        serializer = RentApplicationSerializer(rent_application.first())
-        logger.info('change the status of the rent application: { id: ' + str(rent_application.first().id)
-                    + ' } to returned and change the status of the equipment to returned')
+        if RentApplication.objects.get(id=pk).status is 'ACC':
+            rent_application = RentApplication.objects.filter(id=pk)
+            user_comments = request.POST.get('user_comments', '')
+            rent_application.update(user_comments=user_comments)
+            # rent_application.update(status='RET')
+            rent_application.update(applying=False)
+            rent_equipment = Equipment.objects.filter(id=rent_application.first().equipment.id)
+            rent_equipment.update(status='RET')
+            serializer = RentApplicationSerializer(rent_application.first())
+            logger.info('change the status of the rent application: { id: ' + str(rent_application.first().id)
+                        + ' } to returned and change the status of the equipment to returned')
+        else:
+            return Response({'error': 'cannot return before rent'}, status=400)
         return Response(serializer.data)
 
     @action(detail=True, methods=['post'], url_path='return/confirm')
     def return_confirm_post(self, request, pk):
         rent_application = RentApplication.objects.filter(id=pk)
-        release_equipment = Equipment.objects.filter(id=rent_application.first().equipment.id)
-        release_equipment.update(status='AVA')
-        serializer = RentApplicationSerializer(rent_application.first())
-        logger.info('keep the status of the rent application: { id: ' + str(rent_application.first().id)
-                    + ' } as returned and change the status of the equipment to available')
+        if Equipment.objects.get(id=rent_application.first().equipment.id).status is 'RET':
+            rent_application = RentApplication.objects.filter(id=pk)
+            release_equipment = Equipment.objects.filter(id=rent_application.first().equipment.id)
+            release_equipment.update(status='AVA')
+            serializer = RentApplicationSerializer(rent_application.first())
+            logger.info('keep the status of the rent application: { id: ' + str(rent_application.first().id)
+                        + ' } as returned and change the status of the equipment to available')
+        else:
+            return Response({'error': 'cannot confirm return before return'}, status=400)
         return Response(serializer.data)
 
     def perform_update(self, serializer):

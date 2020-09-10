@@ -1,9 +1,12 @@
 from application.renter_application.models import RenterApplication
 from application.renter_application.serializers import RenterApplicationSerializer
 from rest_framework.response import Response
+from user.models import User
 
 from rest_framework import viewsets
 from rest_framework.decorators import action
+
+from django.core.mail import send_mail
 
 import logging
 
@@ -25,9 +28,19 @@ class RenterApplicationViewSet(viewsets.ModelViewSet):
         comments = request.POST.get('comments', '')
         renter_application.update(comments=comments)
         renter_application.update(status='ACC')
+        renter = User.objects.filter(id=renter_application.first().applicant.id)
+        renter.update(is_renter=True)
         serializer = RenterApplicationSerializer(renter_application.first())
         logger.info('change the status of the renter application: { id: ' + str(renter_application.first().id)
                     + ' } to accepted')
+        email_address = RenterApplication.objects.get(id=pk).applicant
+        send_mail('[example.com] Please Check Your Application Status Updates'
+                  , 'Hello from example.com!\n\n'
+                    'You\'re receiving this e-mail because your RENTER application has been APPROVED by the '
+                    'administrator with comments as below: \n\n' + '"' + comments + '"' +
+                    '\n\nThank you from example.com!\n'
+                    'example.com'
+                  , '624275030@qq.com', [email_address], fail_silently=False)
         return Response(serializer.data)
 
     @action(detail=True, methods=['post'])
@@ -36,9 +49,19 @@ class RenterApplicationViewSet(viewsets.ModelViewSet):
         comments = request.POST.get('comments', '')
         renter_application.update(comments=comments)
         renter_application.update(status='REJ')
+        renter = User.objects.filter(id=renter_application.first().applicant.id)
+        renter.update(is_renter=False)
         serializer = RenterApplicationSerializer(renter_application.first())
         logger.info('change the status of the renter application: { id: ' + str(renter_application.first().id)
                     + ' } to rejected')
+        email_address = RenterApplication.objects.get(id=pk).applicant
+        send_mail('[example.com] Please Check Your Application Status Updates'
+                  , 'Hello from example.com!\n\n'
+                    'You\'re receiving this e-mail because your RENTER application has been REJECTED by the '
+                    'administrator with comments as below: \n\n' + '"' + comments + '"' +
+                  '\n\nThank you from example.com!\n'
+                  'example.com'
+                  , '624275030@qq.com', [email_address], fail_silently=False)
         return Response(serializer.data)
 
     def perform_create(self, serializer):
