@@ -166,10 +166,9 @@ REST_FRAMEWORK = {
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
-
 STATIC_URL = '/static/'
 
-# User
+# User login and email verification
 AUTH_USER_MODEL = 'user.User'
 REST_AUTH_SERIALIZERS = {
     'USER_DETAILS_SERIALIZER': 'user.serializers.UserSerializer',
@@ -208,3 +207,90 @@ EMAIL_USE_TLS = True
 
 EMAIL_FROM = 'Tencent<624275030@qq.com>'
 DEFAULT_FROM_EMAIL = "624275030@qq.com"
+
+# Log
+BASE_LOG_DIR = os.path.join(BASE_DIR, "log")
+LOGGING = {
+    'version': 1,  # version表示版本，一般不用改
+    # disable_existing_loggers表示弃用已经存在的日志，True表示弃用，False表示不弃用。
+    'disable_existing_loggers': False,  # 禁用已经存在的logger实例
+    # 日志文件的格式
+    'formatters': {
+        # 详细的日志格式
+        'verbose': {
+            'format': '[%(asctime)s][%(threadName)s:%(thread)d][task_id:%(name)s][%(filename)s:%(lineno)d]'
+                      '[%(levelname)s][%(message)s]'
+        },
+        # 标准的日志格式
+        'standard': {
+            'format': '[%(levelname)s][%(asctime)s][%(filename)s:%(lineno)d]%(message)s'
+        },
+        # 简单的日志格式
+        'simple': {
+            'format': '[%(levelname)s][ %(message)s]'
+        },
+
+        # 定义一个特殊的日志格式
+        'collect': {
+            'format': '%(message)s'
+        }
+    },
+    # 上面的日志格式可以自己随便定义几个
+    # 过滤器
+    'filters': {
+
+    },
+    # 处理器
+    'handlers': {
+        # 在终端打印
+        'console': {
+            'level': 'DEBUG',  # 日志的级别
+            'class': 'logging.StreamHandler',  #
+            'formatter': 'simple'  # 使用哪种日志格式
+        },
+        # 默认的
+        'default': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',  # 保存到文件，自动切
+            'filename': os.path.join(BASE_LOG_DIR, "info.log"),  # 日志文件的位置
+            'maxBytes': 1024 * 1024 * 50,  # 日志大小 50M
+            'backupCount': 3,  # 最多备份几个
+            'formatter': 'standard',  # 使用哪种日志格式
+            'encoding': 'utf-8',  # 保存的格式
+        },
+        # 专门用来记错误日志
+        'error': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.RotatingFileHandler',  # 保存到文件，自动切
+            'filename': os.path.join(BASE_LOG_DIR, "error.log"),  # 日志文件
+            'maxBytes': 1024 * 1024 * 50,  # 日志大小 50M
+            'backupCount': 5,
+            'formatter': 'standard',
+            'encoding': 'utf-8',
+        },
+        # 专门定义一个收集特定信息的日志
+        'collect': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',  # 保存到文件，自动切
+            'filename': os.path.join(BASE_LOG_DIR, "collect.log"),
+            'maxBytes': 1024 * 1024 * 50,  # 日志大小 50M
+            'backupCount': 5,
+            'formatter': 'collect',
+            'encoding': "utf-8"
+        }
+    },
+    # 上面的处理器可以根据自己的需求来配置
+    'loggers': {
+        # 默认的logger应用如下配置
+        '': {
+            'handlers': ['default', 'console', 'error'],  # 上线之后可以把'console'移除
+            'level': 'DEBUG',
+            'propagate': True,  # 向不向更高级别的logger传递
+        },
+        # 名为 'collect'的logger还单独处理
+        'collect': {
+            'handlers': ['console', 'collect'],
+            'level': 'INFO',
+        }
+    },
+}
