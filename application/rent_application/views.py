@@ -201,7 +201,7 @@ try:
     # scheduler.add_jobstore(DjangoJobStore(), "default")
     # ('scheduler',"interval", seconds=1)  #用interval方式循环，每一秒执行一次
 
-    @register_job(scheduler, 'interval', seconds=1, id='expire_reminder')
+    @register_job(scheduler, 'interval', minutes=30, id='expire_reminder')
     def expire_reminder():
         utc_tz = pytz.timezone('UTC')
         rent_applications = RentApplication.objects.filter(applying=True)
