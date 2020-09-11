@@ -7,7 +7,10 @@ pip install django-allauth
 pip install django-phone-field
 pip install djangorestframework
 pip install django-rest-auth
-pip install django-filter    
+pip install django-filter
+
+pip install pyyaml
+pip install uritemplate
 ```
 
 
