@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+    # 'django_crontab',
+    'django_apscheduler',
 
     'rest_framework',
     'rest_framework.authtoken',
@@ -294,3 +296,9 @@ LOGGING = {
         }
     },
 }
+
+
+# CRONJOBS = [
+#     ('* * * * *', 'application.rent_application.views.expire_reminder', '>> ' + os.path.join(os.path.dirname(BASE_DIR), 'rental_platform/log/reminder.log')),
+# ]
+

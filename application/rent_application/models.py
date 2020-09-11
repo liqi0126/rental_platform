@@ -14,6 +14,11 @@ class RentApplication(Application):
     renter = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='received_rent_applications')
     applying = models.BooleanField(default=False)
 
+    expire_before_day_reminded = models.BooleanField(default=False)
+    expire_before_hour_reminded = models.BooleanField(default=False)
+    expired_reminded = models.BooleanField(default=False)
+
+
     lease_term_begin = models.DateTimeField(blank=True, null=True)
     lease_term_end = models.DateTimeField(blank=True, null=True)
     user_comments = models.TextField(blank=True, null=True)

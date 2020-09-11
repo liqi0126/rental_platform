@@ -1,7 +1,6 @@
+from rest_framework import viewsets
 from equipment.models import Equipment
 from equipment.serializers import EquipmentSerializer
-
-from rest_framework import viewsets
 
 from django.http import HttpResponse
 

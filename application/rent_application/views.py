@@ -7,6 +7,8 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 
 from django.core.mail import send_mail
+import pytz
+import datetime
 
 import logging
 
@@ -134,3 +136,92 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
     filter_fields = '__all__'
     search_fields = ['description', 'comments', 'user_comments']
     ordering_fields = '__all__'
+
+
+def expire_reminder():
+    utc_tz = pytz.timezone('UTC')
+    rent_applications = RentApplication.objects.filter(applying=True)
+    for rent_application in rent_applications:
+        lease_term_end = rent_application.lease_term_end
+        current_time = datetime.datetime.now(tz=utc_tz)
+        seconds_delta = (current_time - lease_term_end).total_seconds()
+
+        if seconds_delta > 60 * 60 * 24:
+            return
+
+        if seconds_delta < 0:
+            expire_message = 'has expired!'
+        elif seconds_delta < 60 * 60:
+            expire_message = 'is going to expire less than 1 hour!'
+        else:
+            expire_message = 'is going to expire less than 1 day!'
+
+        send_mail('[example.com] Your Rented Equipment Is Going To Expire'
+                  , 'Hello from example.com!\n\n'
+                    'You\'re receiving this e-mail because your rented equipment [' + rent_application.equipment.name + '] '
+                  + expire_message + ' Please return it timely!' +
+                  '\n\nThank you from example.com!\n'
+                  'example.com'
+                  , '624275030@qq.com', [rent_application.borrower.email], fail_silently=False)
+
+
+
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.jobstores.memory import MemoryJobStore
+from django_apscheduler.jobstores import DjangoJobStore, register_job
+
+try:
+    # 实例化调度器
+
+    scheduler = BackgroundScheduler(jobstores={
+        'default': MemoryJobStore()
+    })
+
+    # 调度器使用DjangoJobStore()
+    # scheduler.add_jobstore(DjangoJobStore(), "default")
+    # ('scheduler',"interval", seconds=1)  #用interval方式循环，每一秒执行一次
+
+    @register_job(scheduler, 'interval', seconds=1, id='expire_reminder')
+    def expire_reminder():
+        utc_tz = pytz.timezone('UTC')
+        rent_applications = RentApplication.objects.filter(applying=True)
+        for rent_application in rent_applications:
+            lease_term_end = rent_application.lease_term_end
+            current_time = datetime.datetime.now(tz=utc_tz)
+            seconds_delta = (lease_term_end - current_time).total_seconds()
+
+            if seconds_delta > 60 * 60 * 24:
+                return
+
+            if seconds_delta < 0:
+                if rent_application.expired_reminded:
+                    return
+                expire_message = 'has expired!'
+                rent_application.expired_reminded = True
+                rent_application.save()
+            elif seconds_delta < 60 * 60:
+                if rent_application.expire_before_hour_reminded:
+                    return
+                expire_message = 'is going to expire less than 1 hour!'
+                rent_application.expire_before_hour_reminded = True
+                rent_application.save()
+            else:
+                if rent_application.expire_before_day_reminded:
+                    return
+                expire_message = 'is going to expire less than 1 day!'
+                rent_application.expire_before_day_reminded = True
+                rent_application.save()
+
+            send_mail('[example.com] Your Rented Equipment Is Going To Expire'
+                      , 'Hello from example.com!\n\n'
+                        'You\'re receiving this e-mail because your rented equipment [' + rent_application.equipment.name + '] '
+                      + expire_message + ' Please return it timely!' +
+                      '\n\nThank you from example.com!\n'
+                      'example.com'
+                      , '624275030@qq.com', [rent_application.borrower.email], fail_silently=False)
+
+
+    # 调度器开始
+    scheduler.start()
+except:
+    scheduler.shutdown()
