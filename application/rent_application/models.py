@@ -10,8 +10,8 @@ from django.conf import settings
 
 class RentApplication(Application):
     equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE, related_name='rent_applications')
-    borrower = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='rent_applications', blank=True)
-    renter = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='received_rent_applications')
+    borrower = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='rent_applications')
+    renter = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='received_rent_applications', null=True, blank=True)
     applying = models.BooleanField(default=False)
 
     expire_before_day_reminded = models.BooleanField(default=False)

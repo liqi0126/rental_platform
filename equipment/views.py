@@ -1,8 +1,13 @@
 from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
+
 from equipment.models import Equipment
 from equipment.serializers import EquipmentSerializer
 
-from django.http import HttpResponse
+
+
 
 # Create your views here.
 
@@ -20,6 +25,15 @@ class EquipmentViewSet(viewsets.ModelViewSet):
     filter_fields = '__all__'
     search_fields = ['name', 'address', 'description']
     ordering_fields = '__all__'
+
+    @action(detail=True, methods=['post'])
+    def withdraw(self, request, pk):
+        withdraw_equipment = Equipment.objects.filter(id=pk)
+        if Equipment.objects.get(id=pk).status == 'AVA':
+            withdraw_equipment.update(status='UNR')
+        else:
+            return Response({'error': 'cannot withdraw the equipment when it is not available'})
+        return Response('ok')
 
     def perform_create(self, serializer):
         logger.info('create a new equipment: { name: ' + str(serializer.validated_data.get('name')) + ' }')
