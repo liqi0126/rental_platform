@@ -25,8 +25,16 @@ class MessageViewSet(viewsets.ModelViewSet):
     def chats(self, request):
         id_one = request.GET.get('id_one')
         id_two = request.GET.get('id_two')
-        chatter_one = User.objects.get(id=id_one)
-        chatter_two = User.objects.get(id=id_two)
+        print(id_one)
+        print(id_two)
+        try:
+            chatter_one = User.objects.get(id=id_one)
+        except:
+            return Response({'error': 'id_one is not valid'}, status=400)
+        try:
+            chatter_two = User.objects.get(id=id_two)
+        except:
+            return Response({'error': 'id_two is not valid'}, status=400)
         chat_condition_asc = {'sender': chatter_one, 'receiver': chatter_two}
         chat_condition_desc = {'sender': chatter_two, 'receiver': chatter_one}
         chat_messages = Message.objects.filter(Q(**chat_condition_asc) | Q(**chat_condition_desc))

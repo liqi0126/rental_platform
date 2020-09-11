@@ -28,7 +28,7 @@ class EquipmentViewSet(viewsets.ModelViewSet):
             withdraw_equipment.update(status='UNR')
             withdraw_equipment.update(is_released=False)
         else:
-            return Response({'error': 'cannot withdraw the equipment when it is not available'})
+            return Response({'error': 'cannot withdraw the equipment when it is not available'}, status=400)
         return Response('ok')
 
     def perform_create(self, serializer):
