@@ -49,8 +49,8 @@ class ReleaseApplicationViewSet(viewsets.ModelViewSet):
                     + ' } to accepted and change the status of the equipment to available')
         equipment = Equipment.objects.get(id=release_application.first().equipment.id)
         email_address = equipment.owner.email
-        send_mail('[example.com] Please Check Your Application Status Updates'
-                  , 'Hello from example.com!\n\n'
+        send_mail('[rental_platform.com] Please Check Your Application Status Updates'
+                  , 'Hello from rental_platform.com!\n\n'
                     'You\'re receiving this e-mail because your RELEASE application for certain equipment: \n\n'
                     'name: ' + equipment.name +
                     '\nowner: ' + equipment.owner.first_name + ' ' + equipment.owner.last_name +
@@ -60,8 +60,8 @@ class ReleaseApplicationViewSet(viewsets.ModelViewSet):
                     '\naddress: ' + equipment.address + '\n\n'
                     'has been APPROVED by the '
                     'administrator with comments as below: \n\n' + '"' + comments + '"' +
-                  '\n\nThank you from example.com!\n'
-                  'example.com'
+                  '\n\nThank you from rental_platform.com!\n'
+                  'rental_platform.com'
                   , '624275030@qq.com', [email_address], fail_silently=False)
         return Response(serializer.data)
 
@@ -77,8 +77,8 @@ class ReleaseApplicationViewSet(viewsets.ModelViewSet):
         equipment = Equipment.objects.get(id=release_application.first().equipment.id)
         Equipment.objects.filter(id=release_application.first().equipment.id).update(is_released=False)
         email_address = equipment.owner.email
-        send_mail('[example.com] Please Check Your Application Status Updates'
-                  , 'Hello from example.com!\n\n'
+        send_mail('[rental_platform.com] Please Check Your Application Status Updates'
+                  , 'Hello from rental_platform.com!\n\n'
                     'You\'re receiving this e-mail because your RELEASE application for certain equipment: \n\n'
                     'name: ' + equipment.name +
                     '\nowner: ' + equipment.owner.first_name + ' ' + equipment.owner.last_name +
@@ -88,8 +88,8 @@ class ReleaseApplicationViewSet(viewsets.ModelViewSet):
                     '\naddress: ' + equipment.address + '\n\n'
                     'has been REJECTED by the '
                     'administrator with comments as below: \n\n' + '"' + comments + '"' +
-                  '\n\nThank you from example.com!\n'
-                  'example.com'
+                  '\n\nThank you from rental_platform.com!\n'
+                  'rental_platform.com'
                   , '624275030@qq.com', [email_address], fail_silently=False)
         return Response(serializer.data)
 

@@ -34,12 +34,12 @@ class RenterApplicationViewSet(viewsets.ModelViewSet):
         logger.info('change the status of the renter application: { id: ' + str(renter_application.first().id)
                     + ' } to accepted')
         email_address = RenterApplication.objects.get(id=pk).applicant
-        send_mail('[example.com] Please Check Your Application Status Updates'
-                  , 'Hello from example.com!\n\n'
+        send_mail('[rental_platform.com] Please Check Your Application Status Updates'
+                  , 'Hello from rental_platform.com!\n\n'
                     'You\'re receiving this e-mail because your RENTER application has been APPROVED by the '
                     'administrator with comments as below: \n\n' + '"' + comments + '"' +
-                    '\n\nThank you from example.com!\n'
-                    'example.com'
+                    '\n\nThank you from rental_platform.com!\n'
+                    'rental_platform.com'
                   , '624275030@qq.com', [email_address], fail_silently=False)
         return Response(serializer.data)
 
@@ -55,12 +55,12 @@ class RenterApplicationViewSet(viewsets.ModelViewSet):
         logger.info('change the status of the renter application: { id: ' + str(renter_application.first().id)
                     + ' } to rejected')
         email_address = RenterApplication.objects.get(id=pk).applicant
-        send_mail('[example.com] Please Check Your Application Status Updates'
-                  , 'Hello from example.com!\n\n'
+        send_mail('[rental_platform.com] Please Check Your Application Status Updates'
+                  , 'Hello from rental_platform.com!\n\n'
                     'You\'re receiving this e-mail because your RENTER application has been REJECTED by the '
                     'administrator with comments as below: \n\n' + '"' + comments + '"' +
-                  '\n\nThank you from example.com!\n'
-                  'example.com'
+                  '\n\nThank you from rental_platform.com!\n'
+                  'rental_platform.com'
                   , '624275030@qq.com', [email_address], fail_silently=False)
         return Response(serializer.data)
 
