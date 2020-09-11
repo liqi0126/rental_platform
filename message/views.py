@@ -30,6 +30,8 @@ class MessageViewSet(viewsets.ModelViewSet):
         chat_condition_asc = {'sender': chatter_one, 'receiver': chatter_two}
         chat_condition_desc = {'sender': chatter_two, 'receiver': chatter_one}
         chat_messages = Message.objects.filter(Q(**chat_condition_asc) | Q(**chat_condition_desc))
+        logger.info('get chat messages between ' + chatter_one.first_name + ' ' + chatter_one.last_name
+                    + ' and ' + chatter_two.first_name + ' ' + chatter_two.last_name )
         serializer = MessageSerializer(chat_messages, many=True)
         return Response(serializer.data)
 
