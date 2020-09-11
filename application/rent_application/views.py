@@ -1,6 +1,7 @@
 from application.rent_application.models import RentApplication
 from application.rent_application.serializers import RentApplicationSerializer
 from equipment.models import Equipment
+from user.models import User
 from rest_framework.response import Response
 
 from rest_framework import viewsets
@@ -28,6 +29,23 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
             return Response({'error': 'no such an equipment'}, status=400)
         logger.info('create a rent application with equipment: { id: ' + str(equipment.id) + ', name: ' + str(
             equipment.name) + '}')
+        email_address = equipment.owner.email
+        equipment_borrower = User.objects.get(id=self.request.data.get('borrower'))
+        send_mail('[rental_platform.com] Please Check Your Equipment\'s Newly Received Rent Application'
+                  , 'Hello from rental_platform.com!\n\n'
+                    'You\'re receiving this e-mail because your equipment: \n\n'
+                    'name: ' + equipment.name +
+                  '\nowner: ' + equipment.owner.first_name + ' ' + equipment.owner.last_name +
+                  '\ndescription: ' + equipment.description +
+                  '\nphone: ' + equipment.phone +
+                  '\nemail: ' + equipment.email +
+                  '\naddress: ' + equipment.address + '\n\n'
+                  'has received a new RENT application from: \n\n'
+                  + '"' + equipment_borrower.first_name + ' ' + equipment_borrower.last_name + '"' +
+                  '\n\nPlease deal with the application on time!'
+                  '\nThank you from rental_platform.com!\n'
+                  'rental_platform.com'
+                  , '624275030@qq.com', [email_address], fail_silently=False)
         serializer.save(renter=equipment.owner)
 
     @action(detail=True, methods=['post'])
@@ -38,6 +56,7 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
             rent_equipment = Equipment.objects.filter(id=rent_application.first().equipment.id)
             rent_equipment.update(status='REN')
             rent_equipment.update(borrower=RentApplication.objects.get(id=pk).borrower)
+            # print(rent_equipment)
             rent_application.update(comments=comments)
             rent_application.update(status='ACC')
             rent_application.update(applying=True)
@@ -50,13 +69,13 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
                       , 'Hello from rental_platform.com!\n\n'
                         'You\'re receiving this e-mail because your RENT application for certain equipment: \n\n'
                         'name: ' + equipment.name +
-                        '\nowner: ' + equipment.owner.first_name + ' ' + equipment.owner.last_name +
-                        '\ndescription: ' + equipment.description +
-                        '\nphone: ' + equipment.phone +
-                        '\nemail: ' + equipment.email +
-                        '\naddress: ' + equipment.address + '\n\n'                                                           
-                        'has been APPROVED by the '
-                        'administrator with comments as below: \n\n' + '"' + comments + '"' +
+                      '\nowner: ' + equipment.owner.first_name + ' ' + equipment.owner.last_name +
+                      '\ndescription: ' + equipment.description +
+                      '\nphone: ' + equipment.phone +
+                      '\nemail: ' + equipment.email +
+                      '\naddress: ' + equipment.address + '\n\n'
+                                                          'has been APPROVED by the '
+                                                          'administrator with comments as below: \n\n' + '"' + comments + '"' +
                       '\n\nThank you from rental_platform.com!\n'
                       'rental_platform.com'
                       , '624275030@qq.com', [email_address], fail_silently=False)
@@ -76,20 +95,21 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
                     + ' } to rejected')
         email_address = RentApplication.objects.get(id=pk).borrower
         equipment = Equipment.objects.get(id=rent_application.first().equipment.id)
+        print(equipment)
         Equipment.objects.filter(id=rent_application.first().equipment.id).update(borrower=None)
         send_mail('[rental_platform.com] Please Check Your Application Status Updates'
                   , 'Hello from rental_platform.com!\n\n'
                     'You\'re receiving this e-mail because your RENT application for certain equipment: \n\n'
                     'name: ' + equipment.name +
-                    '\nowner: ' + equipment.owner.first_name + ' ' + equipment.owner.last_name +
-                    '\ndescription: ' + equipment.description +
-                    '\nphone: ' + equipment.phone +
-                    '\nemail: ' + equipment.email +
-                    '\naddress: ' + equipment.address + '\n\n'
-                    'has been REJECTED by the '
-                    'administrator with comments as below: \n\n' + '"' + comments + '"' +
-                    '\n\nThank you from rental_platform.com!\n'
-                    'rental_platform.com'
+                  '\nowner: ' + equipment.owner.first_name + ' ' + equipment.owner.last_name +
+                  '\ndescription: ' + equipment.description +
+                  '\nphone: ' + equipment.phone +
+                  '\nemail: ' + equipment.email +
+                  '\naddress: ' + equipment.address + '\n\n'
+                                                      'has been REJECTED by the '
+                                                      'administrator with comments as below: \n\n' + '"' + comments + '"' +
+                  '\n\nThank you from rental_platform.com!\n'
+                  'rental_platform.com'
                   , '624275030@qq.com', [email_address], fail_silently=False)
         return Response(serializer.data)
 
@@ -104,6 +124,25 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
             rent_equipment = Equipment.objects.filter(id=rent_application.first().equipment.id)
             rent_equipment.update(status='RET')
             rent_equipment.update(borrower=None)
+            equipment = Equipment.objects.get(id=rent_application.first().equipment.id)
+            rent_borrower = RentApplication.objects.get(id=pk).borrower
+            email_address = equipment.owner.email
+            send_mail('[rental_platform.com] Please Check Your Equipment\'s Newly Received Return Information'
+                      , 'Hello from rental_platform.com!\n\n'
+                        'You\'re receiving this e-mail because your equipment: \n\n'
+                        'name: ' + equipment.name +
+                      '\nowner: ' + equipment.owner.first_name + ' ' + equipment.owner.last_name +
+                      '\ndescription: ' + equipment.description +
+                      '\nphone: ' + equipment.phone +
+                      '\nemail: ' + equipment.email +
+                      '\naddress: ' + equipment.address + '\n\n'
+                      'has been returned from: \n\n'
+                      + '"' + rent_borrower.first_name + ' ' + rent_borrower.last_name + '"' +
+                      '\n\nPlease check the current status of the equipment and re-release it if everything is fine. '
+                      'If anything goes wrong, please contact the administrator.'
+                      '\nThank you from rental_platform.com!\n'
+                      'rental_platform.com'
+                      , '624275030@qq.com', [email_address], fail_silently=False)
             serializer = RentApplicationSerializer(rent_application.first())
             logger.info('change the status of the rent application: { id: ' + str(rent_application.first().id)
                         + ' } to returned and change the status of the equipment to returned')
@@ -146,34 +185,6 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
     ordering_fields = '__all__'
 
 
-def expire_reminder():
-    utc_tz = pytz.timezone('UTC')
-    rent_applications = RentApplication.objects.filter(applying=True)
-    for rent_application in rent_applications:
-        lease_term_end = rent_application.lease_term_end
-        current_time = datetime.datetime.now(tz=utc_tz)
-        seconds_delta = (current_time - lease_term_end).total_seconds()
-
-        if seconds_delta > 60 * 60 * 24:
-            return
-
-        if seconds_delta < 0:
-            expire_message = 'has expired!'
-        elif seconds_delta < 60 * 60:
-            expire_message = 'is going to expire less than 1 hour!'
-        else:
-            expire_message = 'is going to expire less than 1 day!'
-
-        send_mail('[example.com] Your Rented Equipment Is Going To Expire'
-                  , 'Hello from example.com!\n\n'
-                    'You\'re receiving this e-mail because your rented equipment [' + rent_application.equipment.name + '] '
-                  + expire_message + ' Please return it timely!' +
-                  '\n\nThank you from example.com!\n'
-                  'example.com'
-                  , '624275030@qq.com', [rent_application.borrower.email], fail_silently=False)
-
-
-
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.memory import MemoryJobStore
 from django_apscheduler.jobstores import DjangoJobStore, register_job
@@ -184,6 +195,7 @@ try:
     scheduler = BackgroundScheduler(jobstores={
         'default': MemoryJobStore()
     })
+
 
     # 调度器使用DjangoJobStore()
     # scheduler.add_jobstore(DjangoJobStore(), "default")
@@ -199,33 +211,33 @@ try:
             seconds_delta = (lease_term_end - current_time).total_seconds()
 
             if seconds_delta > 60 * 60 * 24:
-                return
+                continue
 
             if seconds_delta < 0:
                 if rent_application.expired_reminded:
-                    return
+                    continue
                 expire_message = 'has expired!'
                 rent_application.expired_reminded = True
                 rent_application.save()
             elif seconds_delta < 60 * 60:
                 if rent_application.expire_before_hour_reminded:
-                    return
-                expire_message = 'is going to expire less than 1 hour!'
+                    continue
+                expire_message = 'is going to expire in less than 1 hour!'
                 rent_application.expire_before_hour_reminded = True
                 rent_application.save()
             else:
                 if rent_application.expire_before_day_reminded:
-                    return
-                expire_message = 'is going to expire less than 1 day!'
+                    continue
+                expire_message = 'is going to expire in less than 1 day!'
                 rent_application.expire_before_day_reminded = True
                 rent_application.save()
 
-            send_mail('[example.com] Your Rented Equipment Is Going To Expire'
-                      , 'Hello from example.com!\n\n'
+            send_mail('[rental_platform.com] Your Rented Equipment Is Going To Expire'
+                      , 'Hello from rental_platform.com!\n\n'
                         'You\'re receiving this e-mail because your rented equipment [' + rent_application.equipment.name + '] '
                       + expire_message + ' Please return it timely!' +
-                      '\n\nThank you from example.com!\n'
-                      'example.com'
+                      '\n\nThank you from rental_platform.com!\n'
+                      'rental_platform.com'
                       , '624275030@qq.com', [rent_application.borrower.email], fail_silently=False)
 
 
