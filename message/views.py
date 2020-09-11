@@ -21,16 +21,17 @@ class MessageViewSet(viewsets.ModelViewSet):
     search_fields = ['text']
     ordering_fields = '__all__'
 
-    # @action(detail=True, methods=['get'])
-    # def chats(self, request, sender_id, receiver_id):
-    #     sender = User.objects.get(id=sender_id)
-    #     receiver = User.objects.get(id=receiver_id)
-    #     chat_condition_asc = {'sender': sender, 'receiver': receiver}
-    #     chat_condition_desc = {'sender': receiver, 'receiver': sender}
-    #     chat_messages = Message.objects.all()
-    #     # chat_messages = Message.objects.filter(Q(**chat_condition_asc) | Q(**chat_condition_desc))
-    #     serializer = MessageSerializer(chat_messages)
-    #     return Response(serializer.data)
+    @action(detail=False, methods=['get'], url_path='chats')
+    def chats(self, request):
+        id_one = request.GET.get('id_one')
+        id_two = request.GET.get('id_two')
+        chatter_one = User.objects.get(id=id_one)
+        chatter_two = User.objects.get(id=id_two)
+        chat_condition_asc = {'sender': chatter_one, 'receiver': chatter_two}
+        chat_condition_desc = {'sender': chatter_two, 'receiver': chatter_one}
+        chat_messages = Message.objects.filter(Q(**chat_condition_asc) | Q(**chat_condition_desc))
+        serializer = MessageSerializer(chat_messages, many=True)
+        return Response(serializer.data)
 
     # TODO
     def perform_create(self, serializer):
