@@ -21,7 +21,6 @@ class MessageViewSet(viewsets.ModelViewSet):
     search_fields = ['text']
     ordering_fields = '__all__'
 
-    # # TODO: get messages from both side
     # @action(detail=True, methods=['get'])
     # def chats(self, request, sender_id, receiver_id):
     #     sender = User.objects.get(id=sender_id)
