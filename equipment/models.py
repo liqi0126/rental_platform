@@ -29,6 +29,8 @@ class Equipment(models.Model):
 
     status = models.CharField(max_length=3, choices=EquipmentStatus.choices, default=EquipmentStatus.UNRELEASED)
 
+    is_released = models.BooleanField(default=False)
+
     # foreign key related name:
     #   release_applications
     #   rent_applications

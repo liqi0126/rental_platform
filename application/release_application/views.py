@@ -43,6 +43,7 @@ class ReleaseApplicationViewSet(viewsets.ModelViewSet):
         release_application.update(status='ACC')
         release_equipment = Equipment.objects.filter(id=release_application.first().equipment.id)
         release_equipment.update(status='AVA')
+        release_equipment.update(is_released=True)
         serializer = ReleaseApplicationSerializer(release_application.first())
         logger.info('change the status of the release application: { id: ' + str(release_application.first().id)
                     + ' } to accepted and change the status of the equipment to available')
@@ -74,6 +75,7 @@ class ReleaseApplicationViewSet(viewsets.ModelViewSet):
         logger.info('change the status of the release application: { id: ' + str(release_application.first().id)
                     + ' } to rejected')
         equipment = Equipment.objects.get(id=release_application.first().equipment.id)
+        Equipment.objects.filter(id=release_application.first().equipment.id).update(is_released=False)
         email_address = equipment.owner.email
         send_mail('[example.com] Please Check Your Application Status Updates'
                   , 'Hello from example.com!\n\n'

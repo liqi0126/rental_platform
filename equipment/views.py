@@ -30,6 +30,7 @@ class EquipmentViewSet(viewsets.ModelViewSet):
         withdraw_equipment = Equipment.objects.filter(id=pk)
         if Equipment.objects.get(id=pk).status == 'AVA':
             withdraw_equipment.update(status='UNR')
+            withdraw_equipment.update(is_released=False)
         else:
             return Response({'error': 'cannot withdraw the equipment when it is not available'})
         return Response('ok')
