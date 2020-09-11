@@ -27,7 +27,7 @@ from equipment.views import EquipmentViewSet
 from application.renter_application.views import RenterApplicationViewSet
 from application.rent_application.views import RentApplicationViewSet
 from application.release_application.views import ReleaseApplicationViewSet
-
+from message.views import MessageViewSet
 
 # from django.middleware.csrf import get_token
 # from django.http import JsonResponse
@@ -44,7 +44,7 @@ router.register(r'api/v1/equipment', EquipmentViewSet)
 router.register(r'api/v1/renter-application', RenterApplicationViewSet)
 router.register(r'api/v1/rent-application', RentApplicationViewSet)
 router.register(r'api/v1/release-application', ReleaseApplicationViewSet)
-
+router.register(r'api/v1/message', MessageViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),

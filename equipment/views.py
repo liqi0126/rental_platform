@@ -7,11 +7,6 @@ from equipment.models import Equipment
 from equipment.serializers import EquipmentSerializer
 
 
-
-
-# Create your views here.
-
-
 import logging
 
 # 生成一个以当前文件名为名字的logger实例
