@@ -1,7 +1,6 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-
 
 from equipment.models import Equipment
 from equipment.serializers import EquipmentSerializer
@@ -9,7 +8,6 @@ from equipment.serializers import EquipmentSerializer
 
 import logging
 
-# 生成一个以当前文件名为名字的logger实例
 logger = logging.getLogger(__name__)
 
 
@@ -23,12 +21,20 @@ class EquipmentViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def withdraw(self, request, pk):
-        withdraw_equipment = Equipment.objects.filter(id=pk)
-        if Equipment.objects.get(id=pk).status == 'AVA':
-            withdraw_equipment.update(status='UNR')
-            withdraw_equipment.update(is_released=False)
-        else:
-            return Response({'error': 'cannot withdraw the equipment when it is not available'}, status=400)
+        while True:
+            try:
+                equipment = Equipment.objects.get(pk=pk)
+            except Equipment.DoesNotExist:
+                return Response({'detail': 'equipment not found'}, status=status.HTTP_404_NOT_FOUND)
+
+            origin_eq_status = equipment.status
+
+            if origin_eq_status != Equipment.Status.AVAILABLE:
+                return Response({'detail': 'cannot withdraw the equipment when it is not available'}, status=status.HTTP_400_BAD_REQUEST)
+
+            Equipment.objects.filter(pk=pk, status=origin_eq_status).update(status=Equipment.Status.UNRELEASED, is_released=False)
+            break
+
         return Response('ok')
 
     def perform_create(self, serializer):

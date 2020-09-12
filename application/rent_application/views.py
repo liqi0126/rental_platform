@@ -4,9 +4,10 @@ from equipment.models import Equipment
 from user.models import User
 from rest_framework.response import Response
 
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
 
+from django.db import transaction
 from django.core.mail import send_mail
 import pytz
 import datetime
@@ -25,8 +26,9 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
         equipment_id = self.request.POST.get('equipment', '')
         try:
             equipment = Equipment.objects.get(id=equipment_id)
-        except:
-            return Response({'error': 'no such an equipment'}, status=400)
+        except Equipment.DoesNotExist:
+            return Response({'detail': 'no such an equipment'}, status=400)
+
         logger.info('create a rent application with equipment: { id: ' + str(equipment.id) + ', name: ' + str(
             equipment.name) + '}')
         email_address = equipment.owner.email
@@ -40,7 +42,7 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
                   '\nphone: ' + equipment.phone +
                   '\nemail: ' + equipment.email +
                   '\naddress: ' + equipment.address + '\n\n'
-                  'has received a new RENT application from: \n\n'
+                                                      'has received a new RENT application from: \n\n'
                   + '"' + equipment_borrower.first_name + ' ' + equipment_borrower.last_name + '"' +
                   '\n\nPlease deal with the application on time!'
                   '\nThank you from rental_platform.com!\n'
@@ -50,53 +52,91 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def approve(self, request, pk):
-        rent_application = RentApplication.objects.filter(id=pk)
-        if Equipment.objects.get(id=rent_application.first().equipment.id).status != 'REN':
-            comments = request.POST.get('comments', '')
-            rent_equipment = Equipment.objects.filter(id=rent_application.first().equipment.id)
-            rent_equipment.update(status='REN')
-            rent_equipment.update(borrower=RentApplication.objects.get(id=pk).borrower)
-            # print(rent_equipment)
-            rent_application.update(comments=comments)
-            rent_application.update(status='ACC')
-            rent_application.update(applying=True)
-            serializer = RentApplicationSerializer(rent_application.first())
-            logger.info('change the status of the rent application: { id: ' + str(rent_application.first().id)
-                        + ' } to accepted and change the status of the equipment to rented')
-            email_address = RentApplication.objects.get(id=pk).borrower
-            equipment = Equipment.objects.get(id=rent_application.first().equipment.id)
-            send_mail('[rental_platform.com] Please Check Your Application Status Updates'
-                      , 'Hello from rental_platform.com!\n\n'
-                        'You\'re receiving this e-mail because your RENT application for certain equipment: \n\n'
-                        'name: ' + equipment.name +
-                      '\nowner: ' + equipment.owner.first_name + ' ' + equipment.owner.last_name +
-                      '\ndescription: ' + equipment.description +
-                      '\nphone: ' + equipment.phone +
-                      '\nemail: ' + equipment.email +
-                      '\naddress: ' + equipment.address + '\n\n'
-                                                          'has been APPROVED by the '
-                                                          'administrator with comments as below: \n\n' + '"' + comments + '"' +
-                      '\n\nThank you from rental_platform.com!\n'
-                      'rental_platform.com'
-                      , '624275030@qq.com', [email_address], fail_silently=False)
-        else:
-            return Response({'error': 'the equipment has already been rented'}, status=400)
+        comments = request.POST.get('comments', '')
+        with transaction.atomic():
+            while True:
+                try:
+                    rent_application = RentApplication.objects.get(pk=pk)
+                except RentApplication.DoesNotExist:
+                    return Response({'detail': 'rent application not found'}, status=status.HTTP_404_NOT_FOUND)
+
+                origin_application_status = rent_application.status
+
+                if origin_application_status != RentApplication.Status.UNAPPROVED:
+                    return Response({'detail': 'rent application has been approved or rejected'}, status=status.HTTP_400_BAD_REQUEST)
+
+                equipment = Equipment.objects.get(id=rent_application.equipment.id)
+                origin_eq_status = equipment.status
+
+                if origin_eq_status != Equipment.Status.AVAILABLE:
+                    return Response({'detail': 'equipment is not available'}, status=status.HTTP_400_BAD_REQUEST)
+
+                if not Equipment.objects \
+                        .filter(id=rent_application.equipment.id, status=origin_eq_status) \
+                        .update(status=Equipment.Status.RENTED, borrower=rent_application.borrower):
+                    continue
+
+                if not RentApplication.objects.filter(pk=pk, status=origin_application_status) \
+                        .update(status=RentApplication.Status.ACCEPTED, applying=True, comments=comments):
+                    continue
+                break
+
+        serializer = RentApplicationSerializer(rent_application)
+        logger.info('change the status of the rent application: { id: ' + str(rent_application.id)
+                    + ' } to accepted and change the status of the equipment to rented')
+        email_address = RentApplication.objects.get(id=pk).borrower.email
+        equipment = Equipment.objects.get(id=rent_application.equipment.id)
+        send_mail('[rental_platform.com] Please Check Your Application Status Updates'
+                  , 'Hello from rental_platform.com!\n\n'
+                    'You\'re receiving this e-mail because your RENT application for certain equipment: \n\n'
+                    'name: ' + equipment.name +
+                  '\nowner: ' + equipment.owner.first_name + ' ' + equipment.owner.last_name +
+                  '\ndescription: ' + equipment.description +
+                  '\nphone: ' + equipment.phone +
+                  '\nemail: ' + equipment.email +
+                  '\naddress: ' + equipment.address + '\n\n'
+                                                      'has been APPROVED by the '
+                                                      'administrator with comments as below: \n\n' + '"' + comments + '"' +
+                  '\n\nThank you from rental_platform.com!\n'
+                  'rental_platform.com'
+                  , '624275030@qq.com', [email_address], fail_silently=False)
+
         return Response(serializer.data)
 
     @action(detail=True, methods=['post'])
     def reject(self, request, pk):
-        rent_application = RentApplication.objects.filter(id=pk)
         comments = request.POST.get('comments', '')
-        rent_application.update(comments=comments)
-        rent_application.update(status='REJ')
-        rent_application.update(applying=False)
-        serializer = RentApplicationSerializer(rent_application.first())
-        logger.info('change the status of the rent application: { id: ' + str(rent_application.first().id)
+
+        with transaction.atomic():
+            while True:
+                try:
+                    rent_application = RentApplication.objects.get(pk=pk)
+                except RentApplication.DoesNotExist:
+                    return Response({'detail': 'rent application not found'}, status=status.HTTP_404_NOT_FOUND)
+
+                origin_application_status = rent_application.status
+
+                if origin_application_status != RentApplication.Status.UNAPPROVED:
+                    return Response({'detail': 'rent application has been approved or rejected'}, status=status.HTTP_400_BAD_REQUEST)
+
+                equipment = Equipment.objects.get(id=rent_application.equipment.id)
+                origin_eq_status = equipment.status
+
+                if origin_eq_status != Equipment.Status.AVAILABLE:
+                    return Response({'detail': 'equipment is not available'}, status=status.HTTP_400_BAD_REQUEST)
+
+                if not Equipment.objects.filter(id=rent_application.equipment.id, status=origin_eq_status).update(borrower=None):
+                    continue
+
+                if not RentApplication.objects.filter(pk=pk, status=origin_application_status) \
+                        .update(comments=comments, status=RentApplication.Status.REJECTED, applying=False):
+                    continue
+                break
+
+        serializer = RentApplicationSerializer(rent_application)
+        logger.info('change the status of the rent application: { id: ' + str(rent_application.id)
                     + ' } to rejected')
-        email_address = RentApplication.objects.get(id=pk).borrower
-        equipment = Equipment.objects.get(id=rent_application.first().equipment.id)
-        print(equipment)
-        Equipment.objects.filter(id=rent_application.first().equipment.id).update(borrower=None)
+        email_address = RentApplication.objects.get(id=pk).borrower.email
         send_mail('[rental_platform.com] Please Check Your Application Status Updates'
                   , 'Hello from rental_platform.com!\n\n'
                     'You\'re receiving this e-mail because your RENT application for certain equipment: \n\n'
@@ -115,55 +155,96 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'], url_path='return')
     def return_post(self, request, pk):
-        if RentApplication.objects.get(id=pk).status == 'ACC':
-            rent_application = RentApplication.objects.filter(id=pk)
-            user_comments = request.POST.get('user_comments', '')
-            rent_application.update(user_comments=user_comments)
-            # rent_application.update(status='RET')
-            # rent_application.update(applying=False)
-            rent_equipment = Equipment.objects.filter(id=rent_application.first().equipment.id)
-            rent_equipment.update(status='RET')
-            rent_equipment.update(borrower=None)
-            equipment = Equipment.objects.get(id=rent_application.first().equipment.id)
-            rent_borrower = RentApplication.objects.get(id=pk).borrower
-            email_address = equipment.owner.email
-            send_mail('[rental_platform.com] Please Check Your Equipment\'s Newly Received Return Information'
-                      , 'Hello from rental_platform.com!\n\n'
-                        'You\'re receiving this e-mail because your equipment: \n\n'
-                        'name: ' + equipment.name +
-                      '\nowner: ' + equipment.owner.first_name + ' ' + equipment.owner.last_name +
-                      '\ndescription: ' + equipment.description +
-                      '\nphone: ' + equipment.phone +
-                      '\nemail: ' + equipment.email +
-                      '\naddress: ' + equipment.address + '\n\n'
-                      'has been returned from: \n\n'
-                      + '"' + rent_borrower.first_name + ' ' + rent_borrower.last_name + '"' +
-                      '\n\nPlease check the current status of the equipment and re-release it if everything is fine. '
-                      'If anything goes wrong, please contact the administrator.'
-                      '\nThank you from rental_platform.com!\n'
-                      'rental_platform.com'
-                      , '624275030@qq.com', [email_address], fail_silently=False)
-            serializer = RentApplicationSerializer(rent_application.first())
-            logger.info('change the status of the rent application: { id: ' + str(rent_application.first().id)
-                        + ' } to returned and change the status of the equipment to returned')
-        else:
-            return Response({'error': 'cannot return before rent'}, status=400)
+        user_comments = request.POST.get('user_comments', '')
+
+        with transaction.atomic():
+            while True:
+                try:
+                    rent_application = RentApplication.objects.get(pk=pk)
+                except RentApplication.DoesNotExist:
+                    return Response({'detail': 'rent application not found'})
+
+                origin_application_status = rent_application.status
+
+                if origin_application_status != RentApplication.Status.ACCEPTED:
+                    return Response({'detail': 'the rent application has not been accepted'}, status=status.HTTP_400_BAD_REQUEST)
+
+                equipment = Equipment.objects.get(id=rent_application.equipment.id)
+                origin_eq_status = equipment.status
+
+                if origin_eq_status != Equipment.Status.RENTED:
+                    return Response({'detail': 'the equipment is not rented'}, status=status.HTTP_400_BAD_REQUEST)
+
+                if not Equipment.objects \
+                        .filter(id=rent_application.equipment.id, status=origin_eq_status) \
+                        .update(borrower=None, status=Equipment.Status.RETURNED):
+                    continue
+
+                if not RentApplication.objects \
+                        .filter(pk=pk, status=origin_application_status)\
+                        .update(user_comments=user_comments):
+                    continue
+                break
+
+        rent_borrower = RentApplication.objects.get(id=pk).borrower
+        email_address = equipment.owner.email
+        send_mail('[rental_platform.com] Please Check Your Equipment\'s Newly Received Return Information'
+                  , 'Hello from rental_platform.com!\n\n'
+                    'You\'re receiving this e-mail because your equipment: \n\n'
+                    'name: ' + equipment.name +
+                  '\nowner: ' + equipment.owner.first_name + ' ' + equipment.owner.last_name +
+                  '\ndescription: ' + equipment.description +
+                  '\nphone: ' + equipment.phone +
+                  '\nemail: ' + equipment.email +
+                  '\naddress: ' + equipment.address + '\n\n'
+                                                      'has been returned from: \n\n'
+                  + '"' + rent_borrower.first_name + ' ' + rent_borrower.last_name + '"' +
+                  '\n\nPlease check the current status of the equipment and re-release it if everything is fine. '
+                  'If anything goes wrong, please contact the administrator.'
+                  '\nThank you from rental_platform.com!\n'
+                  'rental_platform.com'
+                  , '624275030@qq.com', [email_address], fail_silently=False)
+        serializer = RentApplicationSerializer(rent_application)
+        logger.info('change the status of the rent application: { id: ' + str(rent_application.id)
+                    + ' } to returned and change the status of the equipment to returned')
+
         return Response(serializer.data)
 
     @action(detail=True, methods=['post'], url_path='return/confirm')
     def return_confirm_post(self, request, pk):
-        rent_application = RentApplication.objects.filter(id=pk)
-        if Equipment.objects.get(id=rent_application.first().equipment.id).status == 'RET':
-            rent_application = RentApplication.objects.filter(id=pk)
-            rent_equipment = Equipment.objects.filter(id=rent_application.first().equipment.id)
-            rent_equipment.update(status='AVA')
-            rent_equipment.update(borrower=None)
-            rent_application.update(applying=False)
-            serializer = RentApplicationSerializer(rent_application.first())
-            logger.info('keep the status of the rent application: { id: ' + str(rent_application.first().id)
-                        + ' } as returned and change the status of the equipment to available')
-        else:
-            return Response({'error': 'cannot confirm return before return'}, status=400)
+        with transaction.atomic():
+            while True:
+                try:
+                    rent_application = RentApplication.objects.get(pk=pk)
+                except RentApplication.DoesNotExist:
+                    return Response({'detail': 'rent application not found'}, status=status.HTTP_404_NOT_FOUND)
+
+                origin_application_applying = rent_application.applying
+
+                if not origin_application_applying:
+                    return Response({'detail': 'the rent application is not applying'},
+                                    status=status.HTTP_400_BAD_REQUEST)
+
+                equipment = Equipment.objects.get(id=rent_application.equipment.id)
+                origin_eq_status = equipment.status
+
+                if origin_eq_status != Equipment.Status.RETURNED:
+                    return Response({'detail': 'the equipment is not returned'}, status=status.HTTP_400_BAD_REQUEST)
+
+                if not Equipment.objects \
+                        .filter(id=rent_application.equipment.id, status=origin_eq_status) \
+                        .update(status=Equipment.Status.AVAILABLE, borrower=None):
+                    continue
+
+                if not RentApplication.objects \
+                        .filter(pk=pk, applying=origin_application_applying) \
+                        .update(applying=False):
+                    continue
+                break
+
+        serializer = RentApplicationSerializer(rent_application.first())
+        logger.info('keep the status of the rent application: { id: ' + str(rent_application.first().id)
+                    + ' } as returned and change the status of the equipment to available')
         return Response(serializer.data)
 
     def perform_update(self, serializer):
@@ -187,7 +268,7 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.memory import MemoryJobStore
-from django_apscheduler.jobstores import DjangoJobStore, register_job
+from django_apscheduler.jobstores import register_job
 
 try:
     # 实例化调度器
@@ -200,7 +281,6 @@ try:
     # 调度器使用DjangoJobStore()
     # scheduler.add_jobstore(DjangoJobStore(), "default")
     # ('scheduler',"interval", seconds=1)  #用interval方式循环，每一秒执行一次
-
     @register_job(scheduler, 'interval', minutes=30, id='expire_reminder')
     def expire_reminder():
         utc_tz = pytz.timezone('UTC')

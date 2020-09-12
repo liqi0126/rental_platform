@@ -20,14 +20,14 @@ class Equipment(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='owned_equipments')
     borrower = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='rented_equipments', null=True, blank=True)
 
-    class EquipmentStatus(models.TextChoices):
+    class Status(models.TextChoices):
         UNRELEASED = 'UNR'
         UNAPPROVED = 'UNA'
         AVAILABLE = 'AVA'
         RENTED = 'REN'
         RETURNED = 'RET'
 
-    status = models.CharField(max_length=3, choices=EquipmentStatus.choices, default=EquipmentStatus.UNRELEASED)
+    status = models.CharField(max_length=3, choices=Status.choices, default=Status.UNRELEASED)
 
     is_released = models.BooleanField(default=False)
 

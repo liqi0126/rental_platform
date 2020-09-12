@@ -10,14 +10,15 @@ class Application(models.Model):
 
     description = models.TextField()
 
-    class ApplicationStatus(models.TextChoices):
+
+    class Status(models.TextChoices):
         UNAPPROVED = 'UNA'
         ACCEPTED = 'ACC'
         REJECTED = 'REJ'
 
     status = models.CharField(max_length=3,
-                              choices=ApplicationStatus.choices,
-                              default=ApplicationStatus.UNAPPROVED)
+                              choices=Status.choices,
+                              default=Status.UNAPPROVED)
 
     comments = models.TextField(default='')
 
