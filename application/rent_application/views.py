@@ -56,7 +56,6 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
             rent_equipment = Equipment.objects.filter(id=rent_application.first().equipment.id)
             rent_equipment.update(status='REN')
             rent_equipment.update(borrower=RentApplication.objects.get(id=pk).borrower)
-            # print(rent_equipment)
             rent_application.update(comments=comments)
             rent_application.update(status='ACC')
             rent_application.update(applying=True)
@@ -95,7 +94,6 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
                     + ' } to rejected')
         email_address = RentApplication.objects.get(id=pk).borrower
         equipment = Equipment.objects.get(id=rent_application.first().equipment.id)
-        print(equipment)
         Equipment.objects.filter(id=rent_application.first().equipment.id).update(borrower=None)
         send_mail('[rental_platform.com] Please Check Your Application Status Updates'
                   , 'Hello from rental_platform.com!\n\n'
@@ -119,8 +117,6 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
             rent_application = RentApplication.objects.filter(id=pk)
             user_comments = request.POST.get('user_comments', '')
             rent_application.update(user_comments=user_comments)
-            # rent_application.update(status='RET')
-            # rent_application.update(applying=False)
             rent_equipment = Equipment.objects.filter(id=rent_application.first().equipment.id)
             rent_equipment.update(status='RET')
             rent_equipment.update(borrower=None)

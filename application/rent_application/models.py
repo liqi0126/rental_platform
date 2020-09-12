@@ -18,7 +18,6 @@ class RentApplication(Application):
     expire_before_hour_reminded = models.BooleanField(default=False)
     expired_reminded = models.BooleanField(default=False)
 
-
     lease_term_begin = models.DateTimeField(blank=True, null=True)
     lease_term_end = models.DateTimeField(blank=True, null=True)
     user_comments = models.TextField(blank=True, null=True)
