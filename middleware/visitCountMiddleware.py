@@ -24,27 +24,27 @@ class VisitCountMiddleware(object):
         if request_meta.get('HTTP_REFERER'):
             HTTP_REFERER = request_meta['HTTP_REFERER']
         else:
-            HTTP_REFERER = False
+            HTTP_REFERER = 'Not Found'
         # 目标路径，就是上面说到的B
         if request_meta.get('PATH_INFO'):
             PATH_INFO = request_meta['PATH_INFO']
         else:
-            PATH_INFO = False
+            PATH_INFO = 'Not Found'
         # User-agent，这一项也可以用来过滤请求
         if request_meta.get('HTTP_USER_AGENT'):
             HTTP_USER_AGENT = request_meta['HTTP_USER_AGENT']
         else:
-            HTTP_USER_AGENT = False
+            HTTP_USER_AGENT = 'Not Found'
         # 请求方式
         if request_meta.get('REQUEST_METHOD'):
             REQUEST_METHOD = request_meta['REQUEST_METHOD']
         else:
-            REQUEST_METHOD = False
+            REQUEST_METHOD = 'Not Found'
         # 连接方式，
         if request_meta.get('HTTP_CONNECTION'):
             HTTP_CONNECTION = request_meta['HTTP_CONNECTION']
         else:
-            HTTP_CONNECTION = False
+            HTTP_CONNECTION = 'Not Found'
         # 响应码
         response_code = response.status_code
         visit_time = datetime.datetime.now().isoformat(sep=' ', timespec='seconds')
