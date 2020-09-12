@@ -11,6 +11,8 @@ pip install django-filter
 
 pip install pyyaml
 pip install uritemplate
+
+brew install redis
 ```
 
 

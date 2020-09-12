@@ -72,6 +72,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'middleware.visitCountMiddleware.VisitCountMiddleware'
 ]
 
 ROOT_URLCONF = 'rental_platform.urls'

@@ -5,7 +5,9 @@ from user.models import User
 
 from rest_framework import viewsets
 from rest_framework.decorators import action
+from rest_framework import status
 
+from django.db import transaction
 from django.core.mail import send_mail
 
 import logging
@@ -24,16 +26,22 @@ class RenterApplicationViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def approve(self, request, pk):
-        renter_application = RenterApplication.objects.filter(id=pk)
         comments = request.POST.get('comments', '')
-        renter_application.update(comments=comments)
-        renter_application.update(status='ACC')
-        renter = User.objects.filter(id=renter_application.first().applicant.id)
-        renter.update(is_renter=True)
-        serializer = RenterApplicationSerializer(renter_application.first())
-        logger.info('change the status of the renter application: { id: ' + str(renter_application.first().id)
+        try:
+            renter_application = RenterApplication.objects.get(id=pk)
+        except RenterApplication.DoesNotExist:
+            return Response({'detail': 'renter application not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        # atomic
+        with transaction.atomic():
+            renter_application.update(comments=comments, status=RenterApplication.Status.ACCEPTED)
+            renter = User.objects.get(id=renter_application.applicant.id)
+            renter.update(is_renter=True)
+
+        serializer = RenterApplicationSerializer(renter_application)
+        logger.info('change the status of the renter application: { id: ' + str(renter_application.id)
                     + ' } to accepted')
-        email_address = RenterApplication.objects.get(id=pk).applicant
+        email_address = renter_application.applicant.email
         send_mail('[rental_platform.com] Please Check Your Application Status Updates'
                   , 'Hello from rental_platform.com!\n\n'
                     'You\'re receiving this e-mail because your RENTER application has been APPROVED by the '
@@ -45,16 +53,21 @@ class RenterApplicationViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def reject(self, request, pk):
-        renter_application = RenterApplication.objects.filter(id=pk)
+        try:
+            renter_application = RenterApplication.objects.get(pk=pk)
+        except RenterApplication.DoesNotExist:
+            return Response({'detail': 'renter application not found'}, status=status.HTTP_404_NOT_FOUND)
+
         comments = request.POST.get('comments', '')
-        renter_application.update(comments=comments)
-        renter_application.update(status='REJ')
-        renter = User.objects.filter(id=renter_application.first().applicant.id)
-        renter.update(is_renter=False)
-        serializer = RenterApplicationSerializer(renter_application.first())
-        logger.info('change the status of the renter application: { id: ' + str(renter_application.first().id)
+        with transaction.atomic():
+            renter_application.update(comments=comments, status=RenterApplication.Status.REJECTED)
+            renter = User.objects.get(id=renter_application.applicant.id)
+            renter.update(is_renter=False)
+
+        serializer = RenterApplicationSerializer(renter_application)
+        logger.info('change the status of the renter application: { id: ' + str(renter_application.id)
                     + ' } to rejected')
-        email_address = RenterApplication.objects.get(id=pk).applicant
+        email_address = RenterApplication.objects.get(pk=pk).applicant.email
         send_mail('[rental_platform.com] Please Check Your Application Status Updates'
                   , 'Hello from rental_platform.com!\n\n'
                     'You\'re receiving this e-mail because your RENTER application has been REJECTED by the '
