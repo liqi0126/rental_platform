@@ -34,9 +34,12 @@ class RenterApplicationViewSet(viewsets.ModelViewSet):
 
         # atomic
         with transaction.atomic():
-            renter_application.update(comments=comments, status=RenterApplication.Status.ACCEPTED)
+            renter_application.comments = comments
+            renter_application.status = RenterApplication.Status.ACCEPTED
+            renter_application.save()
             renter = User.objects.get(id=renter_application.applicant.id)
-            renter.update(is_renter=True)
+            renter.is_renter = True
+            renter.save()
 
         serializer = RenterApplicationSerializer(renter_application)
         logger.info('change the status of the renter application: { id: ' + str(renter_application.id)
@@ -60,9 +63,12 @@ class RenterApplicationViewSet(viewsets.ModelViewSet):
 
         comments = request.POST.get('comments', '')
         with transaction.atomic():
-            renter_application.update(comments=comments, status=RenterApplication.Status.REJECTED)
+            renter_application.comments = comments
+            renter_application.status = RenterApplication.Status.REJECTED
+            renter_application.save()
             renter = User.objects.get(id=renter_application.applicant.id)
-            renter.update(is_renter=False)
+            renter.is_renter = False
+            renter.save()
 
         serializer = RenterApplicationSerializer(renter_application)
         logger.info('change the status of the renter application: { id: ' + str(renter_application.id)
