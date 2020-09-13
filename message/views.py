@@ -25,8 +25,6 @@ class MessageViewSet(viewsets.ModelViewSet):
     def chats(self, request):
         id_one = request.GET.get('id_one')
         id_two = request.GET.get('id_two')
-        # print(id_one)
-        # print(id_two)
         try:
             chatter_one = User.objects.get(id=id_one)
         except:

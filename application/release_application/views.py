@@ -8,6 +8,8 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 
 from django.db import transaction
+from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import NotFound
 from django.core.mail import send_mail
 
 import logging
@@ -27,14 +29,16 @@ class ReleaseApplicationViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         while True:
             equipment_id = self.request.POST.get('equipment', '')
+            print(equipment_id)
             try:
                 equipment = Equipment.objects.get(id=equipment_id)
-            except Equipment.DoesNotExist:
-                return Response({'detail': 'no such an equipment'}, status=status.HTTP_404_NOT_FOUND)
+            except:
+                print(1)
+                raise NotFound(detail=None, code=None)
 
             origin_eq_status = equipment.status
             if origin_eq_status != Equipment.Status.UNRELEASED:
-                return Response({'detail': 'equipment has been released'}, status=status.HTTP_400_BAD_REQUEST)
+                raise ValidationError(detail='equipment has been released', code=status.HTTP_400_BAD_REQUEST)
 
             if not Equipment.objects.filter(id=equipment_id, status=origin_eq_status).update(status=Equipment.Status.UNAPPROVED):
                 continue
@@ -69,7 +73,7 @@ class ReleaseApplicationViewSet(viewsets.ModelViewSet):
                 except ReleaseApplication.DoesNotExist:
                     return Response({'error': 'release application not found'}, status=status.HTTP_404_NOT_FOUND)
 
-                origin_application_status = release_equipment.status
+                origin_application_status = release_application.status
 
                 if origin_application_status != ReleaseApplication.Status.UNAPPROVED:
                     return Response({'error': 'application has been accepted or rejected'}, status=status.HTTP_400_BAD_REQUEST)
@@ -78,11 +82,11 @@ class ReleaseApplicationViewSet(viewsets.ModelViewSet):
                 origin_eq_status = release_equipment.status
                 origin_eq_is_released = release_equipment.is_released
 
-                if origin_eq_status != ReleaseApplication.Status.UNAPPROVED:
+                if origin_eq_status != Equipment.Status.UNAPPROVED:
                     return Response({'error': 'the equipment is not in UNAPPROVED status'}, status=status.HTTP_400_BAD_REQUEST)
 
                 if not Equipment.objects\
-                        .filter(id=release_equipment.equipment.id, status=origin_eq_status, is_released=origin_eq_is_released)\
+                        .filter(id=release_equipment.id, status=origin_eq_status, is_released=origin_eq_is_released)\
                         .update(status=Equipment.Status.AVAILABLE, is_released=True):
                     continue
 
@@ -132,12 +136,12 @@ class ReleaseApplicationViewSet(viewsets.ModelViewSet):
                 origin_eq_status = release_equipment.status
                 origin_eq_is_released = release_equipment.is_released
 
-                if origin_eq_status != ReleaseApplication.Status.UNAPPROVED:
+                if origin_eq_status != Equipment.Status.UNAPPROVED:
                     return Response({'error': 'the equipment is not in UNAPPROVED status'}, status=status.HTTP_400_BAD_REQUEST)
 
                 if not Equipment.objects\
                         .filter(id=release_application.equipment.id, status=origin_eq_status, is_released=origin_eq_is_released)\
-                        .update(status=ReleaseApplication.Status.UNAPPROVED, is_released=False):
+                        .update(status=Equipment.Status.UNRELEASED, is_released=False):
                     continue
                 if not ReleaseApplication.objects. \
                         filter(pk=pk, status=origin_application_status). \

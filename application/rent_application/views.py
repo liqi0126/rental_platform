@@ -8,6 +8,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 
 from django.db import transaction
+from rest_framework.exceptions import ValidationError
 from django.core.mail import send_mail
 import pytz
 import datetime
@@ -27,7 +28,7 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
         try:
             equipment = Equipment.objects.get(id=equipment_id)
         except Equipment.DoesNotExist:
-            return Response({'detail': 'no such an equipment'}, status=400)
+            raise ValidationError(detail='no such an equipment', code=404)
 
         logger.info('create a rent application with equipment: { id: ' + str(equipment.id) + ', name: ' + str(
             equipment.name) + '}')
@@ -242,8 +243,8 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
                     continue
                 break
 
-        serializer = RentApplicationSerializer(rent_application.first())
-        logger.info('keep the status of the rent application: { id: ' + str(rent_application.first().id)
+        serializer = RentApplicationSerializer(rent_application)
+        logger.info('keep the status of the rent application: { id: ' + str(rent_application.id)
                     + ' } as returned and change the status of the equipment to available')
         return Response(serializer.data)
 
