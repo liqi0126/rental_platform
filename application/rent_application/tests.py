@@ -3,14 +3,16 @@ from rest_framework import status
 from .models import RentApplication
 from user.models import User
 from equipment.models import Equipment
+from rest_framework.authtoken.models import Token
 
 
 # Create your tests here.
 class RentApplicationTestCase(APITestCase):
     def setUp(self):
+        User.objects.create(email='1@qq.com', password='123123', address='12123', phone='15801266030', is_staff=True)
         user_one = User.objects.create(email='123@qq.com', password='123123', address='123123', phone='15801266030', is_renter=True)
         user_two = User.objects.create(email='456@qq.com', password='456456', address='456456', phone='18012357727', is_renter=True)
-        user_three = User.objects.create(email='789@qq.com', password='789789', address='789789', phone='18012357727')
+        user_three = User.objects.create(email='789@qq.com', password='789789', address='789789', phone='18012357727', is_renter=True)
         equipment_one = Equipment.objects.create(email='123@qq.com', phone='18012357727', address='北京市海淀区', name='光谱仪1'
                                                  , description='1w23', owner=user_one, status='AVA')
         equipment_two = Equipment.objects.create(email='123@qq.com', phone='18012357727', address='北京市海淀区', name='光谱仪2'
@@ -57,26 +59,26 @@ class RentApplicationTestCase(APITestCase):
             'lease_term_end': '2020-10-20 17:44:25'
         }
 
+        for user in User.objects.all():
+            Token.objects.create(user=user)
+        token = Token.objects.get(user=User.objects.get(email='456@qq.com'))
+        self.client.credentials(HTTP_AUTHORIZATION='Token '+token.key)
+
         response = self.client.post('/api/v1/rent-application/', data, form='json')
 
         equipment = Equipment.objects.get(name='光谱仪1')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data.get('renter'), equipment.owner.id)
 
-        data = {
-            'equipment': Equipment.objects.get(name='光谱仪3').id,
-            'borrower': User.objects.get(email='789@qq.com').id,
-            'description': '123123',
-            'lease_term_begin': '2020-09-20 17:44:25',
-            'lease_term_end': '2020-10-20 17:44:25'
-        }
-        response = self.client.post('/api/v1/rent-application/', data, form='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
     def test_approve_rent_application(self):
         data = {
             'comments': 'good job'
         }
+
+        for user in User.objects.all():
+            Token.objects.create(user=user)
+        token = Token.objects.get(user=User.objects.get(email='1@qq.com'))
+        self.client.credentials(HTTP_AUTHORIZATION='Token '+token.key)
 
         rent_id = RentApplication.objects.get(description='789789')
         response = self.client.post('/api/v1/rent-application/' + str(rent_id) + '/approve/', data)
@@ -101,6 +103,11 @@ class RentApplicationTestCase(APITestCase):
             'comments': 'too bad'
         }
 
+        for user in User.objects.all():
+            Token.objects.create(user=user)
+        token = Token.objects.get(user=User.objects.get(email='1@qq.com'))
+        self.client.credentials(HTTP_AUTHORIZATION='Token '+token.key)
+
         rent_id = RentApplication.objects.get(description='456456')
         response = self.client.post('/api/v1/rent-application/' + str(rent_id) + '/reject/', data)
 
@@ -121,6 +128,11 @@ class RentApplicationTestCase(APITestCase):
             'user_comments': 'not bad'
         }
 
+        for user in User.objects.all():
+            Token.objects.create(user=user)
+        token = Token.objects.get(user=User.objects.get(email='123@qq.com'))
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+
         rent_id = RentApplication.objects.get(description='123123REN')
         response = self.client.post('/api/v1/rent-application/' + str(rent_id) + '/return/', data)
 
@@ -129,15 +141,24 @@ class RentApplicationTestCase(APITestCase):
         self.assertEqual(rent_equipment.status, 'RET')
         self.assertEqual(rent_equipment.borrower, None)
 
+        token = Token.objects.get(user=User.objects.get(email='123@qq.com'))
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
         rent_id = RentApplication.objects.get(description='123123')
         response = self.client.post('/api/v1/rent-application/' + str(rent_id) + '/return/', data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+        token = Token.objects.get(user=User.objects.get(email='123@qq.com'))
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
         rent_id = RentApplication.objects.get(description='123REN123UNR')
         response = self.client.post('/api/v1/rent-application/' + str(rent_id) + '/return/', data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_return_confirm_rent_application(self):
+        for user in User.objects.all():
+            Token.objects.create(user=user)
+        token = Token.objects.get(user=User.objects.get(email='789@qq.com'))
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+
         rent_id = RentApplication.objects.get(description='101112')
         response = self.client.post('/api/v1/rent-application/' + str(rent_id) + '/return/confirm/')
 

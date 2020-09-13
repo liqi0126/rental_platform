@@ -2,11 +2,13 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 from .models import Message
 from user.models import User
+from rest_framework.authtoken.models import Token
 
 
 # Create your tests here.
 class MessageTestCase(APITestCase):
     def setUp(self):
+        User.objects.create(email='1@qq.com', password='123123', address='12123', phone='15801266030', is_staff=True)
         person_one = User.objects.create(email='123@qq.com', password='123123', address='123123', phone='15801266030'
                                          , first_name='三', last_name='张')
         person_two = User.objects.create(email='456@qq.com', password='456456', address='456456', phone='18012357727'
@@ -24,6 +26,10 @@ class MessageTestCase(APITestCase):
         Message.objects.create(sender=person_one, receiver=person_two, text="hape9")
 
     def test_chats_message(self):
+        for user in User.objects.all():
+            Token.objects.create(user=user)
+        token = Token.objects.get(user=User.objects.get(email='1@qq.com'))
+        self.client.credentials(HTTP_AUTHORIZATION='Token '+token.key)
         id_one = User.objects.get(email='123@qq.com').id
         id_two = User.objects.get(email='456@qq.com').id
         response = self.client.get('/api/v1/message/chats/?id_one=' + str(id_one) + '&id_two=' + str(id_two))

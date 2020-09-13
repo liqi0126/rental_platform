@@ -3,13 +3,15 @@ from rest_framework import status
 from .models import ReleaseApplication
 from user.models import User
 from equipment.models import Equipment
+from rest_framework.authtoken.models import Token
 
 
 # Create your tests here.
 class ReleaseApplicationTestCase(APITestCase):
     def setUp(self):
-        user_one = User.objects.create(email='123@qq.com', password='123123', address='123123', phone='15801266030')
-        user_two = User.objects.create(email='456@qq.com', password='456456', address='456456', phone='18012357727')
+        User.objects.create(email='1@qq.com', password='123123', address='12123', phone='15801266030', is_staff=True)
+        user_one = User.objects.create(email='123@qq.com', password='123123', address='123123', phone='15801266030', is_renter=True)
+        user_two = User.objects.create(email='456@qq.com', password='456456', address='456456', phone='18012357727', is_renter=True)
         equipment_one = Equipment.objects.create(email='123@qq.com', phone='18012357727', address='北京市海淀区', name='光谱仪1'
                                                  , description='1w23', owner=user_one)
         equipment_two = Equipment.objects.create(email='123@qq.com', phone='18012357727', address='北京市海淀区', name='光谱仪2'
@@ -33,6 +35,11 @@ class ReleaseApplicationTestCase(APITestCase):
             'description': '123'
         }
 
+        for user in User.objects.all():
+            Token.objects.create(user=user)
+        token = Token.objects.get(user=User.objects.get(email='123@qq.com'))
+        self.client.credentials(HTTP_AUTHORIZATION='Token '+token.key)
+
         response = self.client.post('/api/v1/release-application/', data, form='json')
 
         equipment = Equipment.objects.get(name='光谱仪1')
@@ -40,6 +47,8 @@ class ReleaseApplicationTestCase(APITestCase):
         self.assertEqual(response.data.get('owner'), equipment.owner.id)
         self.assertEqual(equipment.status, 'UNA')
 
+        token = Token.objects.get(user=User.objects.get(email='456@qq.com'))
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
         data_new = {
             'equipment': Equipment.objects.get(name='光谱仪5').id,
             'description': '123123'
@@ -58,7 +67,10 @@ class ReleaseApplicationTestCase(APITestCase):
         data = {
             'comments': 'ok'
         }
-
+        for user in User.objects.all():
+            Token.objects.create(user=user)
+        token = Token.objects.get(user=User.objects.get(email='1@qq.com'))
+        self.client.credentials(HTTP_AUTHORIZATION='Token '+token.key)
         release_id = ReleaseApplication.objects.get(description='123123')
         response = self.client.post('/api/v1/release-application/' + str(release_id) + '/approve/', data)
 
@@ -79,6 +91,11 @@ class ReleaseApplicationTestCase(APITestCase):
         data = {
             'comments': 'too bad'
         }
+
+        for user in User.objects.all():
+            Token.objects.create(user=user)
+        token = Token.objects.get(user=User.objects.get(email='1@qq.com'))
+        self.client.credentials(HTTP_AUTHORIZATION='Token '+token.key)
 
         release_id = ReleaseApplication.objects.get(description='101112')
         response = self.client.post('/api/v1/release-application/' + str(release_id) + '/reject/', data)
