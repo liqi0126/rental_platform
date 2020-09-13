@@ -8,8 +8,9 @@ from equipment.models import Equipment
 # Create your tests here.
 class RentApplicationTestCase(APITestCase):
     def setUp(self):
-        user_one = User.objects.create(email='123@qq.com', password='123123', address='123123', phone='15801266030')
-        user_two = User.objects.create(email='456@qq.com', password='456456', address='456456', phone='18012357727')
+        user_one = User.objects.create(email='123@qq.com', password='123123', address='123123', phone='15801266030', is_renter=True)
+        user_two = User.objects.create(email='456@qq.com', password='456456', address='456456', phone='18012357727', is_renter=True)
+        user_three = User.objects.create(email='789@qq.com', password='789789', address='789789', phone='18012357727')
         equipment_one = Equipment.objects.create(email='123@qq.com', phone='18012357727', address='北京市海淀区', name='光谱仪1'
                                                  , description='1w23', owner=user_one, status='AVA')
         equipment_two = Equipment.objects.create(email='123@qq.com', phone='18012357727', address='北京市海淀区', name='光谱仪2'
@@ -61,6 +62,16 @@ class RentApplicationTestCase(APITestCase):
         equipment = Equipment.objects.get(name='光谱仪1')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data.get('renter'), equipment.owner.id)
+
+        data = {
+            'equipment': Equipment.objects.get(name='光谱仪3').id,
+            'borrower': User.objects.get(email='789@qq.com').id,
+            'description': '123123',
+            'lease_term_begin': '2020-09-20 17:44:25',
+            'lease_term_end': '2020-10-20 17:44:25'
+        }
+        response = self.client.post('/api/v1/rent-application/', data, form='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_approve_rent_application(self):
         data = {

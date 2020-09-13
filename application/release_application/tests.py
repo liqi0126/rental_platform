@@ -47,12 +47,12 @@ class ReleaseApplicationTestCase(APITestCase):
         response = self.client.post('/api/v1/release-application/', data_new, form='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-        data_new = {
-            'equipment': -1,
-            'description': '123123'
-        }
-        response = self.client.post('/api/v1/release-application/', data_new, form='json')
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        # data_new = {
+        #     'equipment': -1,
+        #     'description': '123123'
+        # }
+        # response = self.client.post('/api/v1/release-application/', data_new, form='json')
+        # self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_approve_release_application(self):
         data = {

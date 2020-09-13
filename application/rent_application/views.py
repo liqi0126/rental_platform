@@ -24,7 +24,14 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
     serializer_class = RentApplicationSerializer
 
     def perform_create(self, serializer):
+        borrower_id = self.request.POST.get('borrower', '')
         equipment_id = self.request.POST.get('equipment', '')
+        try:
+            borrower = User.objects.get(id=borrower_id)
+        except User.DoesNotExist:
+            raise ValidationError(detail='no such an user', code=404)
+        if not borrower.is_renter:
+            raise ValidationError(detail='borrower is not a renter', code=status.HTTP_400_BAD_REQUEST)
         try:
             equipment = Equipment.objects.get(id=equipment_id)
         except Equipment.DoesNotExist:
@@ -60,6 +67,9 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
                     rent_application = RentApplication.objects.get(pk=pk)
                 except RentApplication.DoesNotExist:
                     return Response({'detail': 'rent application not found'}, status=status.HTTP_404_NOT_FOUND)
+
+                if not rent_application.borrower.is_renter:
+                    raise ValidationError(detail='borrower is not a renter', code=status.HTTP_400_BAD_REQUEST)
 
                 origin_application_status = rent_application.status
 
@@ -115,6 +125,9 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
                 except RentApplication.DoesNotExist:
                     return Response({'detail': 'rent application not found'}, status=status.HTTP_404_NOT_FOUND)
 
+                if not rent_application.borrower.is_renter:
+                    raise ValidationError(detail='borrower is not a renter', code=status.HTTP_400_BAD_REQUEST)
+
                 origin_application_status = rent_application.status
 
                 if origin_application_status != RentApplication.Status.UNAPPROVED:
@@ -164,6 +177,9 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
                     rent_application = RentApplication.objects.get(pk=pk)
                 except RentApplication.DoesNotExist:
                     return Response({'detail': 'rent application not found'})
+
+                if not rent_application.borrower.is_renter:
+                    raise ValidationError(detail='borrower is not a renter', code=status.HTTP_400_BAD_REQUEST)
 
                 origin_application_status = rent_application.status
 
