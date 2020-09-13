@@ -48,12 +48,7 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrCannotUpdateAndDestroy]
 
     def perform_create(self, serializer):
-        borrower_id = self.request.POST.get('borrower', '')
         equipment_id = self.request.POST.get('equipment', '')
-        try:
-            borrower = User.objects.get(id=borrower_id)
-        except User.DoesNotExist:
-            raise ValidationError(detail='no such an user', code=404)
 
         try:
             equipment = Equipment.objects.get(id=equipment_id)

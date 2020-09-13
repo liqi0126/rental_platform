@@ -10,6 +10,7 @@ from application.release_application.models import ReleaseApplication
 from application.release_application.serializers import ReleaseApplicationSerializer
 from application.permission import IsAdminOrCannotUpdateAndDestroy
 from equipment.models import Equipment
+from user.models import User
 
 import logging
 
@@ -33,6 +34,8 @@ class ReleaseApplicationViewSet(viewsets.ModelViewSet):
                 equipment = Equipment.objects.get(id=equipment_id)
             except:
                 raise NotFound(detail=None, code=None)
+            if not equipment.owner.is_renter:
+                raise ValidationError(detail='owner is not a renter', code=status.HTTP_400_BAD_REQUEST)
 
             origin_eq_status = equipment.status
             if origin_eq_status != Equipment.Status.UNRELEASED:
