@@ -16,6 +16,9 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
         if not bool(request.user and request.user.is_authenticated):
             return False
 
+        if bool(request.user and request.user.is_staff):
+            return True
+
         if request.method in permissions.SAFE_METHODS:
             return True
 
@@ -26,7 +29,7 @@ class EquipmentViewSet(viewsets.ModelViewSet):
     queryset = Equipment.objects.all()
     serializer_class = EquipmentSerializer
 
-    permission_classes = [IsOwnerOrReadOnly | permissions.IsAdminUser]
+    permission_classes = [IsOwnerOrReadOnly]
     filter_fields = '__all__'
     search_fields = ['name', 'address', 'description']
     ordering_fields = '__all__'

@@ -20,18 +20,24 @@ from user.models import User
 logger = logging.getLogger(__name__)
 
 
-class IsRenter(permissions.BasePermission):
+class IsAdminOrRenter(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if not bool(request.user and request.user.is_authenticated):
             return False
+
+        if bool(request.user and request.user.is_staff):
+            return True
 
         return obj.renter == request.user
 
 
-class IsBorrower(permissions.BasePermission):
+class IsAdminOrBorrower(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if not bool(request.user and request.user.is_authenticated):
             return False
+
+        if bool(request.user and request.user.is_staff):
+            return True
 
         return obj.borrower == request.user
 
@@ -76,7 +82,7 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
                   , '624275030@qq.com', [email_address], fail_silently=False)
         serializer.save(renter=equipment.owner)
 
-    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser | IsRenter])
+    @action(detail=True, methods=['post'], permission_classes=[IsAdminOrRenter])
     def approve(self, request, pk):
         comments = request.POST.get('comments', '')
         with transaction.atomic():
@@ -132,7 +138,7 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
-    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser, IsRenter])
+    @action(detail=True, methods=['post'], permission_classes=[IsAdminOrRenter])
     def reject(self, request, pk):
         comments = request.POST.get('comments', '')
 
@@ -185,7 +191,7 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
                   , '624275030@qq.com', [email_address], fail_silently=False)
         return Response(serializer.data)
 
-    @action(detail=True, methods=['post'], url_path='return', permission_classes=[permissions.IsAdminUser | IsBorrower])
+    @action(detail=True, methods=['post'], url_path='return', permission_classes=[IsAdminOrBorrower])
     def return_post(self, request, pk):
         user_comments = request.POST.get('user_comments', '')
 
@@ -245,7 +251,7 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
-    @action(detail=True, methods=['post'], url_path='return/confirm', permission_classes=[permissions.IsAdminUser | IsRenter])
+    @action(detail=True, methods=['post'], url_path='return/confirm', permission_classes=[IsAdminOrRenter])
     def return_confirm_post(self, request, pk):
         with transaction.atomic():
             while True:

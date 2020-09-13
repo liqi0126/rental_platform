@@ -19,6 +19,9 @@ class IsSenderOrReadOnly(permissions.BasePermission):
         if not bool(request.user and request.user.is_authenticated):
             return False
 
+        if bool(request.user and request.user.is_staff):
+            return True
+
         if request.method in permissions.SAFE_METHODS:
             return True
 
@@ -28,7 +31,7 @@ class IsSenderOrReadOnly(permissions.BasePermission):
 class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
-    permission_classes = [IsSenderOrReadOnly | permissions.IsAdminUser]
+    permission_classes = [IsSenderOrReadOnly]
 
     filter_fields = '__all__'
     search_fields = ['text']
@@ -54,14 +57,12 @@ class MessageViewSet(viewsets.ModelViewSet):
         serializer = MessageSerializer(chat_messages, many=True)
         return Response(serializer.data)
 
-    # TODO
     def perform_create(self, serializer):
         logger.info('create a new chat message: { sender: ' + str(serializer.validated_data.get('sender'))
                     + ', receiver: ' + str(serializer.validated_data.get('receiver'))
                     + ', text: ' + str(serializer.validated_data.get('text')) + ' }')
         serializer.save()
 
-    # TODO
     def perform_update(self, serializer):
         if self.request.method == 'PUT':
             logger.info('update a chat message(through put): { sender: ' + str(serializer.validated_data.get('sender'))
@@ -69,13 +70,11 @@ class MessageViewSet(viewsets.ModelViewSet):
                         + ', text: ' + str(serializer.validated_data.get('text')) + ' }')
         serializer.save()
 
-    # TODO
     def partial_update(self, request, *args, **kwargs):
         kwargs['partial'] = True
         logger.info('update a chat message(through patch): ' + str(request.data))
         return self.update(request, *args, **kwargs)
 
-    # TODO
     def perform_destroy(self, instance):
         logger.info('delete a chat message: ' + str(instance))
         instance.delete()

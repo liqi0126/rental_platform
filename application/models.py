@@ -10,7 +10,6 @@ class Application(models.Model):
 
     description = models.TextField()
 
-
     class Status(models.TextChoices):
         UNAPPROVED = 'UNA'
         ACCEPTED = 'ACC'
