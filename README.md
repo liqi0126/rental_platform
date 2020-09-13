@@ -12,7 +12,10 @@ pip install django-filter
 pip install pyyaml
 pip install uritemplate
 
+# 流量记录
 brew install redis
+# 开启redis服务
+redis-server
 ```
 
 
