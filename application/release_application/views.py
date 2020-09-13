@@ -1,16 +1,15 @@
+from django.db import transaction
+from django.core.mail import send_mail
+
+from rest_framework.response import Response
+from rest_framework import status, viewsets, permissions
+from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError, NotFound
+
 from application.release_application.models import ReleaseApplication
 from application.release_application.serializers import ReleaseApplicationSerializer
+from application.permission import IsAdminOrCannotUpdateAndDestroy
 from equipment.models import Equipment
-from rest_framework.response import Response
-from rest_framework import status
-
-from rest_framework import viewsets
-from rest_framework.decorators import action
-
-from django.db import transaction
-from rest_framework.exceptions import ValidationError
-from rest_framework.exceptions import NotFound
-from django.core.mail import send_mail
 
 import logging
 
@@ -22,6 +21,7 @@ class ReleaseApplicationViewSet(viewsets.ModelViewSet):
     queryset = ReleaseApplication.objects.all()
     serializer_class = ReleaseApplicationSerializer
 
+    permission_classes = [IsAdminOrCannotUpdateAndDestroy]
     filter_fields = '__all__'
     search_fields = ['description', 'comments']
     ordering_fields = '__all__'
@@ -29,11 +29,9 @@ class ReleaseApplicationViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         while True:
             equipment_id = self.request.POST.get('equipment', '')
-            print(equipment_id)
             try:
                 equipment = Equipment.objects.get(id=equipment_id)
             except:
-                print(1)
                 raise NotFound(detail=None, code=None)
 
             origin_eq_status = equipment.status
@@ -62,7 +60,7 @@ class ReleaseApplicationViewSet(viewsets.ModelViewSet):
         logger.info('delete a release application: ' + str(instance))
         instance.delete()
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser])
     def approve(self, request, pk):
         comments = request.POST.get('comments', '')
 
@@ -116,7 +114,7 @@ class ReleaseApplicationViewSet(viewsets.ModelViewSet):
                   , '624275030@qq.com', [email_address], fail_silently=False)
         return Response(serializer.data)
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser])
     def reject(self, request, pk):
         comments = request.POST.get('comments', '')
 

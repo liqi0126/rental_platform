@@ -55,7 +55,7 @@ urlpatterns = [
     url(r'^api/v1/account-rest/registration/account-confirm-email/(?P<key>.+)/$', confirm_email, name='account_confirm_email'),
     path('api/v1/swagger-ui/', TemplateView.as_view(template_name='swagger-ui.html',extra_context={'schema_url': 'openapi-schema'}), name='swagger-ui'),
     path('openapi', get_schema_view(
-        title="Your Project",
+        title="Rental Platform",
         description="API for all things …",
         version="1.0.0"
     ), name='openapi-schema'),

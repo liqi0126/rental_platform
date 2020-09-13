@@ -1,14 +1,15 @@
-from application.renter_application.models import RenterApplication
-from application.renter_application.serializers import RenterApplicationSerializer
-from rest_framework.response import Response
-from user.models import User
-
-from rest_framework import viewsets
-from rest_framework.decorators import action
-from rest_framework import status
-
 from django.db import transaction
 from django.core.mail import send_mail
+
+from rest_framework.response import Response
+from rest_framework.decorators import action
+from rest_framework import status, viewsets, permissions
+
+
+from user.models import User
+from application.permission import IsAdminOrCannotUpdateAndDestroy
+from application.renter_application.models import RenterApplication
+from application.renter_application.serializers import RenterApplicationSerializer
 
 import logging
 
@@ -19,12 +20,13 @@ logger = logging.getLogger(__name__)
 class RenterApplicationViewSet(viewsets.ModelViewSet):
     queryset = RenterApplication.objects.all()
     serializer_class = RenterApplicationSerializer
+    permission_classes = [IsAdminOrCannotUpdateAndDestroy]
 
     filter_fields = '__all__'
     search_fields = ['description', 'comments']
     ordering_fields = '__all__'
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser])
     def approve(self, request, pk):
         comments = request.POST.get('comments', '')
         try:
@@ -54,7 +56,7 @@ class RenterApplicationViewSet(viewsets.ModelViewSet):
                   , '624275030@qq.com', [email_address], fail_silently=False)
         return Response(serializer.data)
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser])
     def reject(self, request, pk):
         try:
             renter_application = RenterApplication.objects.get(pk=pk)

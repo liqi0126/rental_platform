@@ -1,4 +1,4 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -11,10 +11,22 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+class IsOwnerOrReadOnly(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if not bool(request.user and request.user.is_authenticated):
+            return False
+
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        return request.user == obj.owner
+
+
 class EquipmentViewSet(viewsets.ModelViewSet):
     queryset = Equipment.objects.all()
     serializer_class = EquipmentSerializer
 
+    permission_classes = [IsOwnerOrReadOnly | permissions.IsAdminUser]
     filter_fields = '__all__'
     search_fields = ['name', 'address', 'description']
     ordering_fields = '__all__'

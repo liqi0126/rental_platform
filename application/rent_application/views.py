@@ -1,27 +1,45 @@
+import pytz
+import datetime
+import logging
+
+from django.db import transaction
+from django.core.mail import send_mail
+
+from rest_framework import viewsets, status, permissions
+from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
+from rest_framework.response import Response
+
+from application.permission import IsAdminOrCannotUpdateAndDestroy
 from application.rent_application.models import RentApplication
 from application.rent_application.serializers import RentApplicationSerializer
 from equipment.models import Equipment
 from user.models import User
-from rest_framework.response import Response
-
-from rest_framework import viewsets, status
-from rest_framework.decorators import action
-
-from django.db import transaction
-from rest_framework.exceptions import ValidationError
-from django.core.mail import send_mail
-import pytz
-import datetime
-
-import logging
 
 # 生成一个以当前文件名为名字的logger实例
 logger = logging.getLogger(__name__)
 
 
+class IsRenter(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if not bool(request.user and request.user.is_authenticated):
+            return False
+
+        return obj.renter == request.user
+
+
+class IsBorrower(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if not bool(request.user and request.user.is_authenticated):
+            return False
+
+        return obj.borrower == request.user
+
+
 class RentApplicationViewSet(viewsets.ModelViewSet):
     queryset = RentApplication.objects.all()
     serializer_class = RentApplicationSerializer
+    permission_classes = [IsAdminOrCannotUpdateAndDestroy]
 
     def perform_create(self, serializer):
         borrower_id = self.request.POST.get('borrower', '')
@@ -58,7 +76,7 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
                   , '624275030@qq.com', [email_address], fail_silently=False)
         serializer.save(renter=equipment.owner)
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser | IsRenter])
     def approve(self, request, pk):
         comments = request.POST.get('comments', '')
         with transaction.atomic():
@@ -114,7 +132,7 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser, IsRenter])
     def reject(self, request, pk):
         comments = request.POST.get('comments', '')
 
@@ -167,7 +185,7 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
                   , '624275030@qq.com', [email_address], fail_silently=False)
         return Response(serializer.data)
 
-    @action(detail=True, methods=['post'], url_path='return')
+    @action(detail=True, methods=['post'], url_path='return', permission_classes=[permissions.IsAdminUser | IsBorrower])
     def return_post(self, request, pk):
         user_comments = request.POST.get('user_comments', '')
 
@@ -227,7 +245,7 @@ class RentApplicationViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
-    @action(detail=True, methods=['post'], url_path='return/confirm')
+    @action(detail=True, methods=['post'], url_path='return/confirm', permission_classes=[permissions.IsAdminUser | IsRenter])
     def return_confirm_post(self, request, pk):
         with transaction.atomic():
             while True:

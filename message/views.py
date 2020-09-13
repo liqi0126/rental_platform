@@ -1,6 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework import permissions
 
 from message.models import Message
 from user.models import User
@@ -13,9 +14,21 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+class IsSenderOrReadOnly(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if not bool(request.user and request.user.is_authenticated):
+            return False
+
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        return request.user == obj.sender
+
+
 class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
+    permission_classes = [IsSenderOrReadOnly | permissions.IsAdminUser]
 
     filter_fields = '__all__'
     search_fields = ['text']

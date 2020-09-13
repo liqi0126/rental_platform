@@ -1,6 +1,7 @@
 from user.models import User
 from user.serializers import UserSerializer
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
+
 
 import logging
 
@@ -8,10 +9,22 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+class IsSelfOrReadOnly(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if not bool(request.user and request.user.is_authenticated):
+            return False
+
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        return request.user == obj
+
+
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
+    permission_classes = [IsSelfOrReadOnly | permissions.IsAdminUser]
     filter_fields = '__all__'
     search_fields = ['first_name', 'last_name', 'address']
     ordering_fields = '__all__'
