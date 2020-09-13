@@ -10,19 +10,15 @@ logger = logging.getLogger(__name__)
 
 class IsSelfOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
-        print('call 1')
         if not bool(request.user and request.user.is_authenticated):
             return False
 
-        print('call 2')
         if bool(request.user and request.user.is_staff):
             return True
 
-        print('call 3')
         if request.method in permissions.SAFE_METHODS:
             return True
 
-        print('call 4')
         return request.user == obj
 
 
